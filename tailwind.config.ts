@@ -13,6 +13,10 @@ export default {
       },
     },
     extend: {
+      fontFamily: {
+        sans: ["Plus Jakarta Sans", "sans-serif"],
+        display: ["Space Grotesk", "sans-serif"],
+      },
       colors: {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
@@ -57,33 +61,55 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        aura: {
+          lavender: "hsl(var(--aura-lavender))",
+          peach: "hsl(var(--aura-peach))",
+          teal: "hsl(var(--aura-teal))",
+          rose: "hsl(var(--aura-rose))",
+          mint: "hsl(var(--aura-mint))",
+        },
+        status: {
+          idea: "hsl(var(--status-idea))",
+          writing: "hsl(var(--status-writing))",
+          recording: "hsl(var(--status-recording))",
+          production: "hsl(var(--status-production))",
+          mixing: "hsl(var(--status-mixing))",
+          mastering: "hsl(var(--status-mastering))",
+          release: "hsl(var(--status-release))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        xl: "calc(var(--radius) + 4px)",
+        "2xl": "calc(var(--radius) + 8px)",
+        "3xl": "calc(var(--radius) + 16px)",
+      },
+      boxShadow: {
+        glow: "0 0 40px -10px hsl(var(--primary) / 0.3)",
+        "glow-lg": "0 0 60px -15px hsl(var(--primary) / 0.4)",
+        soft: "0 10px 40px -15px hsl(var(--foreground) / 0.1)",
+        "soft-lg": "0 20px 60px -20px hsl(var(--foreground) / 0.15)",
       },
       keyframes: {
         "accordion-down": {
-          from: {
-            height: "0",
-          },
-          to: {
-            height: "var(--radix-accordion-content-height)",
-          },
+          from: { height: "0" },
+          to: { height: "var(--radix-accordion-content-height)" },
         },
         "accordion-up": {
-          from: {
-            height: "var(--radix-accordion-content-height)",
-          },
-          to: {
-            height: "0",
-          },
+          from: { height: "var(--radix-accordion-content-height)" },
+          to: { height: "0" },
+        },
+        "pulse-soft": {
+          "0%, 100%": { opacity: "1" },
+          "50%": { opacity: "0.7" },
         },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "pulse-soft": "pulse-soft 2s ease-in-out infinite",
       },
     },
   },
