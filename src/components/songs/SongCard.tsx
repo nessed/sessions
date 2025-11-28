@@ -1,0 +1,65 @@
+import { Link } from "react-router-dom";
+import { Song, Project } from "@/lib/types";
+import { getSongProgress } from "@/lib/sessionsStore";
+import { StatusBadge } from "./StatusBadge";
+import { ProgressBar } from "./ProgressBar";
+import { formatDistanceToNow } from "date-fns";
+import { Music } from "lucide-react";
+
+interface SongCardProps {
+  song: Song;
+  project?: Project;
+}
+
+export const SongCard = ({ song, project }: SongCardProps) => {
+  const progress = getSongProgress(song.id);
+
+  return (
+    <Link to={`/song/${song.id}`} className="song-card block animate-fade-in">
+      <div className="flex items-start gap-4">
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-aura-peach/20 flex items-center justify-center flex-shrink-0">
+          <Music className="w-6 h-6 text-primary" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h3 className="font-display font-semibold text-lg truncate">{song.title}</h3>
+          {project && (
+            <p className="text-sm text-muted-foreground truncate">{project.title}</p>
+          )}
+        </div>
+        <StatusBadge status={song.status} />
+      </div>
+
+      <div className="mt-4">
+        <ProgressBar progress={progress} />
+      </div>
+
+      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
+        <div className="flex items-center gap-2">
+          {song.bpm && <span>{song.bpm} BPM</span>}
+          {song.key && <span>• Key: {song.key}</span>}
+        </div>
+        <span>
+          {formatDistanceToNow(new Date(song.updatedAt), { addSuffix: true })}
+        </span>
+      </div>
+
+      {song.moodTags.length > 0 && (
+        <div className="mt-3 flex flex-wrap gap-1.5">
+          {song.moodTags.slice(0, 3).map((tag) => (
+            <span
+              key={tag}
+              className="px-2 py-0.5 text-xs rounded-full bg-muted text-muted-foreground"
+            >
+              {tag}
+            </span>
+          ))}
+          {song.moodTags.length > 3 && (
+            <span className="px-2 py-0.5 text-xs rounded-full bg-muted text-muted-foreground">
+              +{song.moodTags.length - 3}
+            </span>
+          )}
+        </div>
+      )}
+    </Link>
+  );
+};
