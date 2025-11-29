@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { parseTaskInput } from "@/lib/classifier";
 import { createTask } from "@/lib/sessionsStore";
-import { Plus, Sparkles } from "lucide-react";
+import { Info, Plus, Sparkles, CheckCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Priority, Section } from "@/lib/types";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 
 interface SmartTaskInputProps {
   songId: string;
@@ -14,6 +15,7 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
   const [value, setValue] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement | null>(null);
+  const [recentlyAdded, setRecentlyAdded] = useState<string | null>(null);
 
   const escapeHtml = (text: string) =>
     text
@@ -115,6 +117,8 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
       const section: Section = parsed.section || "idea";
       createTask(songId, section, cleanTitle, parsed.priority, parsed.dueDate);
       setValue("");
+      setRecentlyAdded(cleanTitle);
+      setTimeout(() => setRecentlyAdded(null), 1500);
       onCreated?.();
     } finally {
       setIsSubmitting(false);
@@ -138,7 +142,7 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
       onSubmit={handleSubmit}
       className="mb-4 rounded-xl border border-border bg-muted/40 px-3 py-2"
     >
-      <div className="flex items-start gap-3">
+      <div className="flex items-start gap-2">
         <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
           <Sparkles className="w-4 h-4" />
         </div>
@@ -158,37 +162,78 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
             rows={1}
           />
         </div>
-        <button
-          type="submit"
-          className={cn(
-            "px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors",
-            parsed.title.trim()
-              ? "bg-primary text-primary-foreground"
-              : "bg-muted text-muted-foreground cursor-not-allowed"
-          )}
-          disabled={!parsed.title.trim() || isSubmitting}
-        >
-          <Plus className="w-4 h-4" />
-        </button>
+        <div className="flex items-center gap-1">
+          <Popover>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                aria-label="How to use smart input"
+              >
+                <Info className="w-4 h-4" />
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="text-sm max-w-sm">
+              <p className="font-medium mb-2">Smart input tips</p>
+              <ul className="space-y-1 text-muted-foreground">
+                <li>
+                  <span className="font-semibold text-primary">@mixing</span>{" "}
+                  for section
+                </li>
+                <li>
+                  <span className="font-semibold text-orange-500">!high</span>{" "}
+                  or <span className="font-semibold">p2</span> for priority
+                </li>
+                <li>
+                  <span className="font-semibold text-emerald-600">
+                    due:tomorrow
+                  </span>{" "}
+                  or <span className="font-semibold text-emerald-600">today</span>{" "}
+                  for dates
+                </li>
+                <li>Enter to add, Shift+Enter for newline, Esc to clear</li>
+              </ul>
+            </PopoverContent>
+          </Popover>
+          <button
+            type="submit"
+            className={cn(
+              "px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors",
+              parsed.title.trim()
+                ? "bg-primary text-primary-foreground"
+                : "bg-muted text-muted-foreground cursor-not-allowed"
+            )}
+            disabled={!parsed.title.trim() || isSubmitting}
+          >
+            <Plus className="w-4 h-4" />
+          </button>
+        </div>
       </div>
-      <div className="mt-2 flex flex-wrap gap-2 text-xs text-muted-foreground">
-        {parsed.section && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-primary">
-            Section: {parsed.section}
+      <div className="mt-2 flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+        <div className="flex flex-wrap gap-2">
+          {parsed.section && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-primary/10 px-2 py-1 text-primary">
+              Section: {parsed.section}
+            </span>
+          )}
+          {parsed.priority && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
+              Priority: {parsed.priority}
+            </span>
+          )}
+          {parsed.dueDate && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-emerald-600">
+              Due: {parsed.dueDate}
+            </span>
+          )}
+          {!parsed.section && !parsed.priority && !parsed.dueDate && (
+            <span className="rounded-full bg-muted px-2 py-1">General task</span>
+          )}
+        </div>
+        {recentlyAdded && (
+          <span className="inline-flex items-center gap-1 text-emerald-600">
+            <CheckCircle className="w-4 h-4" /> Added: {recentlyAdded}
           </span>
-        )}
-        {parsed.priority && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-muted px-2 py-1">
-            Priority: {parsed.priority}
-          </span>
-        )}
-        {parsed.dueDate && (
-          <span className="inline-flex items-center gap-1 rounded-full bg-emerald-500/10 px-2 py-1 text-emerald-600">
-            Due: {parsed.dueDate}
-          </span>
-        )}
-        {!parsed.section && !parsed.priority && !parsed.dueDate && (
-          <span className="rounded-full bg-muted px-2 py-1">General task</span>
         )}
       </div>
     </form>
