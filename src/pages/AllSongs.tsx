@@ -7,7 +7,7 @@ import { useSessionsDB } from "@/hooks/useSessionsDB";
 import { getSongProgress } from "@/lib/sessionsStore";
 import { Song, SongStatus, SECTIONS, SECTION_LABELS } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
-import { Music, ArrowUpDown, Filter } from "lucide-react";
+import { Music, Filter } from "lucide-react";
 
 type SortField = "title" | "updatedAt" | "status";
 type SortOrder = "asc" | "desc";
@@ -49,49 +49,53 @@ const AllSongs = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        <header className="mb-8 pt-8 lg:pt-0">
-          <h1 className="text-4xl font-display font-bold text-gradient mb-2">All Songs</h1>
-          <p className="text-muted-foreground">Browse and filter your music catalog</p>
+        <header className="mb-8 pt-6 lg:pt-0">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Catalog</p>
+          <h1 className="text-3xl font-display font-semibold text-white mb-2">All Songs</h1>
+          <p className="text-muted-foreground">Browse, filter, and jump into any song without visual noise.</p>
         </header>
 
         {/* Filters */}
-        <div className="glass-panel p-4 mb-6 flex flex-wrap items-center gap-4">
-          <div className="flex items-center gap-2">
-            <Filter className="w-4 h-4 text-muted-foreground" />
-            <select
-              value={statusFilter}
-              onChange={(e) => setStatusFilter(e.target.value as SongStatus | "all")}
-              className="bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
-            >
-              <option value="all">All Statuses</option>
-              {SECTIONS.map((s) => (
-                <option key={s} value={s}>{SECTION_LABELS[s]}</option>
-              ))}
-            </select>
+        <div className="glass-panel-subtle p-4 mb-6 flex flex-wrap items-center gap-3 border border-white/5">
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Filter className="w-4 h-4" />
+            <span>Filter</span>
           </div>
+          <select
+            value={statusFilter}
+            onChange={(e) => setStatusFilter(e.target.value as SongStatus | "all")}
+            className="bg-white/5 border border-white/10 rounded-lg px-3 py-2 text-sm outline-none text-white focus:ring-2 focus:ring-primary/40"
+          >
+            <option value="all">All Statuses</option>
+            {SECTIONS.map((s) => (
+              <option key={s} value={s}>{SECTION_LABELS[s]}</option>
+            ))}
+          </select>
 
-          <div className="flex items-center gap-2 ml-auto">
-            <span className="text-sm text-muted-foreground">Sort:</span>
+          <div className="flex items-center gap-2 ml-auto text-sm text-muted-foreground">
+            <span>Sort</span>
             <button
               onClick={() => toggleSort("title")}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                sortField === "title" ? "bg-primary/10 text-primary" : "hover:bg-muted"
+              className={`px-3 py-1.5 rounded-lg border border-white/5 transition-colors ${
+                sortField === "title" ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white hover:bg-white/5"
               }`}
             >
               Title
             </button>
             <button
               onClick={() => toggleSort("updatedAt")}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                sortField === "updatedAt" ? "bg-primary/10 text-primary" : "hover:bg-muted"
+              className={`px-3 py-1.5 rounded-lg border border-white/5 transition-colors ${
+                sortField === "updatedAt"
+                  ? "bg-white/10 text-white"
+                  : "text-muted-foreground hover:text-white hover:bg-white/5"
               }`}
             >
               Updated
             </button>
             <button
               onClick={() => toggleSort("status")}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                sortField === "status" ? "bg-primary/10 text-primary" : "hover:bg-muted"
+              className={`px-3 py-1.5 rounded-lg border border-white/5 transition-colors ${
+                sortField === "status" ? "bg-white/10 text-white" : "text-muted-foreground hover:text-white hover:bg-white/5"
               }`}
             >
               Status
@@ -106,8 +110,8 @@ const AllSongs = () => {
             <p className="text-muted-foreground">No songs found</p>
           </div>
         ) : (
-          <div className="glass-panel overflow-hidden">
-            <div className="divide-y divide-border">
+          <div className="glass-panel overflow-hidden border border-white/5">
+            <div className="divide-y divide-white/5">
               {filteredSongs.map((song) => {
                 const project = getProject(song.projectId);
                 const progress = getSongProgress(song.id);
@@ -116,7 +120,7 @@ const AllSongs = () => {
                   <Link
                     key={song.id}
                     to={`/song/${song.id}`}
-                    className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors animate-fade-in"
+                    className="flex items-center gap-4 p-4 hover:bg-white/5 transition-colors animate-fade-in"
                   >
                     <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-aura-peach/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
                       {song.coverArt ? (

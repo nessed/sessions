@@ -19,13 +19,10 @@ const Index = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        <header className="mb-4 pt-8 lg:pt-0">
-          <h1 className="text-3xl font-display font-bold tracking-tight text-white mb-1">
-            Dashboard
-          </h1>
-          <p className="text-sm text-zinc-300">
-            Dense view of your sessions
-          </p>
+        <header className="mb-6 pt-6 lg:pt-0">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Overview</p>
+          <h1 className="text-3xl font-display font-semibold text-white mb-2">Dashboard</h1>
+          <p className="text-sm text-zinc-300">Your songs, ordered by momentum.</p>
         </header>
 
         {sortedSongs.length === 0 ? (
