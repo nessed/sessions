@@ -15,6 +15,11 @@ import Today from "./pages/Today";
 import FilterView from "./pages/FilterView";
 import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import { ProtectedRoute } from "./auth/ProtectedRoute";
+import { AuthProvider } from "./auth/AuthProvider";
+import VerifyEmail from "./pages/VerifyEmail";
 
 const queryClient = new QueryClient();
 
@@ -37,18 +42,86 @@ const App = () => (
       <Toaster />
       <Sonner />
       <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/song/:id" element={<SongDetail />} />
-          <Route path="/songs" element={<AllSongs />} />
-          <Route path="/projects" element={<Projects />} />
-          <Route path="/project/:id" element={<ProjectDetail />} />
-          <Route path="/ideas" element={<IdeasVault />} />
-          <Route path="/today" element={<Today />} />
-          <Route path="/filter/:section" element={<FilterView />} />
-          <Route path="/settings" element={<Settings />} />
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+        <AuthProvider>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/verify-email" element={<VerifyEmail />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <Index />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/song/:id"
+              element={
+                <ProtectedRoute>
+                  <SongDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/songs"
+              element={
+                <ProtectedRoute>
+                  <AllSongs />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/projects"
+              element={
+                <ProtectedRoute>
+                  <Projects />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/project/:id"
+              element={
+                <ProtectedRoute>
+                  <ProjectDetail />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/ideas"
+              element={
+                <ProtectedRoute>
+                  <IdeasVault />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/today"
+              element={
+                <ProtectedRoute>
+                  <Today />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/filter/:section"
+              element={
+                <ProtectedRoute>
+                  <FilterView />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/settings"
+              element={
+                <ProtectedRoute>
+                  <Settings />
+                </ProtectedRoute>
+              }
+            />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </AuthProvider>
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
