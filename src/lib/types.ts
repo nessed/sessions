@@ -35,6 +35,8 @@ export interface Song {
   key?: string;
   moodTags: string[];
   coverArt?: string;
+  audioUrl?: string;
+  audioTitle?: string;
   status: SongStatus;
   projectFileLink?: string;
   driveLink?: string;

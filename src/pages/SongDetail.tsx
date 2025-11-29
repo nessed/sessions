@@ -1,5 +1,5 @@
 import { useParams, useNavigate } from "react-router-dom";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { TaskSection } from "@/components/tasks/TaskSection";
 import { SmartTaskInput } from "@/components/tasks/SmartTaskInput";
@@ -29,7 +29,18 @@ import {
   SECTION_LABELS,
   SongStatus,
 } from "@/lib/types";
-import { ArrowLeft, Trash2, Plus, X, ExternalLink } from "lucide-react";
+import {
+  ArrowLeft,
+  Trash2,
+  Plus,
+  X,
+  ExternalLink,
+  Play,
+  Pause,
+  Volume2,
+  Upload,
+  Link2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { PrioritySelector } from "@/components/ui/priority-selector";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -52,6 +63,14 @@ const SongDetail = () => {
   const [newVersionName, setNewVersionName] = useState("");
   const [isAddingVersion, setIsAddingVersion] = useState(false);
   const [showAllSections, setShowAllSections] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | undefined>();
+  const [audioTitle, setAudioTitle] = useState<string>("");
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [currentTime, setCurrentTime] = useState(0);
+  const [duration, setDuration] = useState(0);
+  const [volume, setVolume] = useState(0.9);
+  const [audioLink, setAudioLink] = useState("");
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
   useEffect(() => {
     if (id) {
@@ -65,6 +84,13 @@ const SongDetail = () => {
         setNotes(songNotes);
         setNoteContent(songNotes[0]?.content || "");
         setVersions(getVersionsBySong(id));
+        setAudioUrl(songData.audioUrl);
+        setAudioTitle(songData.audioTitle || "");
+        if (songData.audioUrl?.startsWith("http")) {
+          setAudioLink(songData.audioUrl);
+        } else {
+          setAudioLink("");
+        }
       }
     }
   }, [id, db]);
@@ -98,6 +124,41 @@ const SongDetail = () => {
       setDominantColor(`rgba(${r}, ${g}, ${b}, 0.35)`);
     };
   }, [coverPreview]);
+
+  // Sync audio element listeners
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+
+    const handleLoaded = () => {
+      setDuration(audio.duration || 0);
+      setCurrentTime(audio.currentTime || 0);
+    };
+
+    const handleTime = () => setCurrentTime(audio.currentTime || 0);
+    const handleEnd = () => setIsPlaying(false);
+
+    audio.addEventListener("loadedmetadata", handleLoaded);
+    audio.addEventListener("timeupdate", handleTime);
+    audio.addEventListener("ended", handleEnd);
+
+    return () => {
+      audio.removeEventListener("loadedmetadata", handleLoaded);
+      audio.removeEventListener("timeupdate", handleTime);
+      audio.removeEventListener("ended", handleEnd);
+    };
+  }, [audioUrl]);
+
+  // Reset playback when source changes
+  useEffect(() => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.pause();
+    audio.currentTime = 0;
+    setIsPlaying(false);
+    setCurrentTime(0);
+    setDuration(audio.duration || 0);
+  }, [audioUrl]);
 
   const handleRefresh = () => {
     if (id) {
@@ -208,6 +269,86 @@ const SongDetail = () => {
     }
   };
 
+  const handleAudioUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const url = reader.result as string;
+      if (song) {
+        updateSong(song.id, { audioUrl: url, audioTitle: file.name });
+        setAudioUrl(url);
+        setAudioTitle(file.name);
+        handleRefresh();
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAudioLink = (url: string) => {
+    if (song && url.trim()) {
+      updateSong(song.id, { audioUrl: url.trim(), audioTitle: undefined });
+      setAudioUrl(url.trim());
+      setAudioTitle("");
+      handleRefresh();
+    }
+  };
+
+  const handleRemoveAudio = () => {
+    if (song) {
+      updateSong(song.id, { audioUrl: undefined, audioTitle: undefined });
+      setAudioUrl(undefined);
+      setAudioTitle("");
+      handleRefresh();
+    }
+  };
+
+  const togglePlayback = () => {
+    const audio = audioRef.current;
+    if (!audio || !audioUrl) return;
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      const playPromise = audio.play();
+      if (playPromise !== undefined) {
+        playPromise
+          .then(() => setIsPlaying(true))
+          .catch(() => setIsPlaying(false));
+      } else {
+        setIsPlaying(true);
+      }
+    }
+  };
+
+  const handleSeek = (value: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    audio.currentTime = value;
+    setCurrentTime(value);
+  };
+
+  const handleVolumeChange = (value: number) => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    const vol = Math.min(Math.max(value, 0), 1);
+    audio.volume = vol;
+    setVolume(vol);
+  };
+
+  useEffect(() => {
+    if (audioRef.current) {
+      audioRef.current.volume = volume;
+    }
+  }, [volume]);
+
+  const formatTime = (time: number) => {
+    if (!Number.isFinite(time)) return "0:00";
+    const minutes = Math.floor(time / 60);
+    const seconds = Math.floor(time % 60)
+      .toString()
+      .padStart(2, "0");
+    return `${minutes}:${seconds}`;
+  };
+
   if (!song) {
     return (
       <Layout>
@@ -295,6 +436,126 @@ const SongDetail = () => {
                 </div>
               </div>
             )}
+            {/* Audio Player */}
+            <div className="glass-panel relative overflow-hidden p-5">
+              <div
+                className="absolute inset-0 opacity-70"
+                style={{
+                  background: coverPreview
+                    ? `radial-gradient(circle at 20% 20%, ${dominantColor}, transparent 45%), radial-gradient(circle at 80% 30%, ${dominantColor}, transparent 40%), radial-gradient(circle at 50% 80%, ${dominantColor}, transparent 40%)`
+                    : "linear-gradient(120deg, rgba(99,102,241,0.25), rgba(45,212,191,0.2))",
+                  filter: "blur(32px)",
+                }}
+              />
+              <div className="relative z-10 space-y-4">
+                <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                  <button
+                    onClick={togglePlayback}
+                    disabled={!audioUrl}
+                    className={cn(
+                      "w-14 h-14 rounded-2xl flex items-center justify-center text-primary-foreground transition-all shadow-lg",
+                      audioUrl
+                        ? "bg-primary hover:scale-105 active:scale-95"
+                        : "bg-muted text-muted-foreground cursor-not-allowed"
+                    )}
+                  >
+                    {isPlaying ? <Pause className="w-6 h-6" /> : <Play className="w-6 h-6" />}
+                  </button>
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="w-14 h-14 rounded-2xl overflow-hidden border border-border/70 bg-muted/60 shadow-inner flex-shrink-0">
+                      {coverPreview ? (
+                        <img
+                          src={coverPreview}
+                          alt={`${song.title} cover`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-xs text-muted-foreground">
+                          Audio
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs uppercase tracking-wide text-muted-foreground">
+                        Audio preview
+                      </p>
+                      <p className="font-display font-semibold truncate">
+                        {audioTitle || song.title}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        {audioUrl ? `${formatTime(currentTime)} / ${formatTime(duration)}` : "Add an mp3 to preview"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="range"
+                      min={0}
+                      max={duration || 0}
+                      step={0.5}
+                      value={Math.min(currentTime, duration || 0)}
+                      onChange={(e) => handleSeek(parseFloat(e.target.value))}
+                      disabled={!audioUrl}
+                      className="flex-1 accent-primary cursor-pointer"
+                    />
+                    <div className="w-16 text-right text-xs text-muted-foreground">
+                      {formatTime(duration)}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3 md:flex-row md:items-center md:gap-4">
+                    <div className="flex items-center gap-2">
+                      <Volume2 className="w-4 h-4 text-muted-foreground" />
+                      <input
+                        type="range"
+                        min={0}
+                        max={1}
+                        step={0.05}
+                        value={volume}
+                        onChange={(e) => handleVolumeChange(parseFloat(e.target.value))}
+                        className="w-32 accent-primary"
+                      />
+                    </div>
+                    <div className="flex flex-1 flex-col gap-2 md:flex-row md:items-center md:gap-2">
+                      <label className="relative inline-flex items-center gap-2 px-3 py-2 rounded-lg bg-white/80 text-sm font-medium text-primary shadow cursor-pointer hover:bg-white">
+                        <Upload className="w-4 h-4" />
+                        Upload mp3
+                        <input
+                          type="file"
+                          accept="audio/mpeg,audio/mp3,audio/*"
+                          className="absolute inset-0 opacity-0 cursor-pointer"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleAudioUpload(file);
+                          }}
+                        />
+                      </label>
+                      <div className="flex items-center gap-2 flex-1 bg-muted/60 rounded-lg px-3 py-2">
+                        <Link2 className="w-4 h-4 text-muted-foreground" />
+                        <input
+                          type="url"
+                          placeholder="Paste stream URL"
+                          value={audioLink}
+                          onChange={(e) => setAudioLink(e.target.value)}
+                          onBlur={() => audioLink && handleAudioLink(audioLink)}
+                          className="flex-1 bg-transparent outline-none text-sm"
+                        />
+                      </div>
+                      {audioUrl && (
+                        <button
+                          onClick={handleRemoveAudio}
+                          className="text-xs px-3 py-2 rounded-lg border border-border/70 text-muted-foreground hover:text-destructive hover:border-destructive/50 transition-colors"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <audio ref={audioRef} src={audioUrl} preload="metadata" />
+            </div>
             {/* Song Info */}
             <div className="glass-panel p-6">
               <div className="flex items-start justify-between gap-4 mb-6">
