@@ -37,15 +37,16 @@ const Projects = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        <header className="mb-8 pt-8 lg:pt-0">
-          <h1 className="text-4xl font-display font-bold text-gradient mb-2">EPs / Albums</h1>
-          <p className="text-muted-foreground">Group your songs into projects</p>
+        <header className="mb-8 pt-6 lg:pt-0">
+          <p className="text-xs uppercase tracking-[0.2em] text-white/40 mb-2">Projects</p>
+          <h1 className="text-3xl font-display font-semibold text-white mb-2">EPs / Albums</h1>
+          <p className="text-muted-foreground">Group your songs into focused projects with a calm, minimal surface.</p>
         </header>
 
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {/* Add New Project */}
           {isAdding ? (
-            <div className="glass-panel p-6 animate-scale-in">
+            <div className="glass-panel p-6 animate-scale-in border border-white/5">
               <input
                 type="text"
                 value={newTitle}
@@ -74,7 +75,7 @@ const Projects = () => {
                 <button
                   onClick={handleCreate}
                   disabled={!newTitle.trim()}
-                  className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 disabled:opacity-50"
+                  className="px-4 py-2 text-sm bg-white/10 text-white rounded-lg border border-white/10 hover:bg-white/15 disabled:opacity-50"
                 >
                   Create
                 </button>
@@ -83,7 +84,7 @@ const Projects = () => {
           ) : (
             <button
               onClick={() => setIsAdding(true)}
-              className="glass-panel p-6 flex items-center gap-3 text-muted-foreground hover:text-foreground hover-lift"
+              className="glass-panel p-6 flex items-center gap-3 text-muted-foreground hover:text-foreground hover-lift border border-white/5"
             >
               <div className="w-12 h-12 rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
                 <Plus className="w-5 h-5" />
@@ -101,10 +102,10 @@ const Projects = () => {
               <Link
                 key={project.id}
                 to={`/project/${project.id}`}
-                className="glass-panel p-6 hover-lift block animate-fade-in group"
+                className="glass-panel p-6 hover-lift block animate-fade-in group border border-white/5"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-aura-lavender/30 to-aura-teal/30 flex items-center justify-center overflow-hidden">
+                  <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center overflow-hidden">
                     {project.coverArt ? (
                       <img
                         src={project.coverArt}
@@ -112,7 +113,7 @@ const Projects = () => {
                         className="w-full h-full object-cover"
                       />
                     ) : (
-                      <Disc className="w-6 h-6 text-primary" />
+                      <Disc className="w-6 h-6 text-white/70" />
                     )}
                   </div>
                   <button
@@ -133,9 +134,9 @@ const Projects = () => {
                   <span>{progress}% complete</span>
                 </div>
 
-                <div className="mt-3 h-1.5 bg-muted rounded-full overflow-hidden">
+                <div className="mt-3 h-1.5 bg-white/5 rounded-full overflow-hidden">
                   <div
-                    className="h-full bg-gradient-to-r from-primary to-aura-teal rounded-full transition-all duration-500"
+                    className="h-full bg-white/60 rounded-full transition-all duration-500"
                     style={{ width: `${progress}%` }}
                   />
                 </div>
