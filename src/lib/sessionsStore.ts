@@ -176,7 +176,9 @@ export const getSectionProgress = (
 export const createTask = (
   songId: string,
   section: Section,
-  title: string
+  title: string,
+  priority?: Priority,
+  dueDate?: string
 ): Task => {
   const db = loadDB();
   const sectionTasks = db.tasks.filter(
@@ -189,6 +191,8 @@ export const createTask = (
     title,
     done: false,
     order: sectionTasks.length,
+    priority,
+    dueDate,
     createdAt: getTimestamp(),
     updatedAt: getTimestamp(),
   };

@@ -166,7 +166,7 @@ export const SECTIONS: Section[] = [
 ];
 
 export const SECTION_LABELS: Record<Section, string> = {
-  idea: "Idea",
+  idea: "General",
   writing: "Writing",
   recording: "Recording",
   production: "Production",

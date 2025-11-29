@@ -6,10 +6,8 @@ import {
   deleteTask,
   canCompleteTask,
 } from "@/lib/sessionsStore";
-import { Check, Trash2, Calendar, AlertCircle, Clock } from "lucide-react";
+import { Check, Trash2, Calendar, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { PrioritySelector } from "@/components/ui/priority-selector";
-import { DatePicker } from "@/components/ui/date-picker";
 import { formatDistanceToNow } from "date-fns";
 
 interface TaskItemProps {
@@ -55,21 +53,23 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
   };
 
   return (
-    <div className={cn("task-item group", task.done && "opacity-60")}>
+    <div
+      className={cn(
+        "flex items-start gap-3 py-1",
+        task.done && "opacity-60"
+      )}
+    >
       <button
         onClick={handleToggle}
         className={cn(
-          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 relative overflow-hidden",
+          "mt-1 w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
           task.done
-            ? "bg-gradient-to-br from-primary to-aura-lavender border-primary shadow-lg"
-            : "border-muted-foreground/30 hover:border-primary hover:bg-primary/10"
+            ? "bg-primary border-primary"
+            : "border-muted-foreground/30 hover:border-primary"
         )}
+        aria-label={task.done ? "Mark incomplete" : "Mark complete"}
       >
-        {task.done && (
-          <>
-            <Check className="w-3 h-3 text-primary-foreground relative z-10" />
-          </>
-        )}
+        {task.done && <Check className="w-3 h-3 text-primary-foreground" />}
       </button>
 
       {isEditing ? (
@@ -86,65 +86,55 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
             }
           }}
           autoFocus
-          className="flex-1 bg-transparent outline-none"
+          className="flex-1 bg-transparent outline-none text-sm"
         />
       ) : (
         <div className="flex-1 min-w-0">
-          <span
+          <button
             onClick={() => setIsEditing(true)}
-            className={cn("cursor-text block", task.done && "line-through")}
+            className={cn(
+              "text-left text-sm hover:text-foreground transition-colors",
+              task.done && "line-through text-muted-foreground"
+            )}
           >
             {task.title}
-          </span>
-          <div className="flex items-center gap-2 mt-1">
+          </button>
+          <div className="flex flex-wrap items-center gap-2 mt-1 text-xs text-muted-foreground">
             {task.priority && (
-              <span
-                className={cn(
-                  "text-xs px-1.5 py-0.5 rounded",
-                  task.priority === "urgent" && "bg-red-500/10 text-red-500",
-                  task.priority === "high" &&
-                    "bg-orange-500/10 text-orange-500",
-                  task.priority === "medium" &&
-                    "bg-yellow-500/10 text-yellow-500",
-                  task.priority === "low" && "bg-blue-500/10 text-blue-500"
-                )}
-              >
+              <span className="rounded-full bg-muted px-2 py-0.5">
                 {task.priority}
               </span>
             )}
             {task.dueDate && (
               <span
                 className={cn(
-                  "text-xs",
+                  "flex items-center gap-1",
                   new Date(task.dueDate) < new Date() && !task.done
                     ? "text-destructive"
                     : "text-muted-foreground"
                 )}
               >
-                Due{" "}
+                <Clock className="w-3 h-3" />
                 {formatDistanceToNow(new Date(task.dueDate), {
                   addSuffix: true,
                 })}
               </span>
             )}
-            {task.actualTime && (
-              <span className="text-xs text-muted-foreground flex items-center gap-1">
-                <Clock className="w-3 h-3" />
-                {Math.round(task.actualTime)}m
+            {task.today && (
+              <span className="flex items-center gap-1 rounded-full bg-primary/10 px-2 py-0.5 text-primary">
+                Today
               </span>
             )}
           </div>
         </div>
       )}
 
-      <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+      <div className="flex items-center gap-2 text-muted-foreground">
         <button
           onClick={handleToggleToday}
           className={cn(
-            "p-1.5 rounded-lg transition-colors",
-            task.today
-              ? "text-status-production bg-status-production/10"
-              : "text-muted-foreground hover:text-foreground hover:bg-muted"
+            "p-1 rounded hover:text-foreground",
+            task.today && "text-primary"
           )}
           title={task.today ? "Remove from Today" : "Add to Today"}
         >
@@ -152,7 +142,7 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
         </button>
         <button
           onClick={handleDelete}
-          className="p-1.5 rounded-lg text-muted-foreground hover:text-destructive hover:bg-destructive/10 transition-colors"
+          className="p-1 rounded hover:text-destructive"
         >
           <Trash2 className="w-4 h-4" />
         </button>

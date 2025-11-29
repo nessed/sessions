@@ -49,6 +49,7 @@ const SongDetail = () => {
   const [newTag, setNewTag] = useState("");
   const [newVersionName, setNewVersionName] = useState("");
   const [isAddingVersion, setIsAddingVersion] = useState(false);
+  const [showAllSections, setShowAllSections] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -408,7 +409,23 @@ const SongDetail = () => {
             <div className="glass-panel p-6">
               <h2 className="text-xl font-display font-semibold mb-4">Tasks</h2>
               <SmartTaskInput songId={song.id} onCreated={handleRefresh} />
-              {SECTIONS.map((section) => (
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-muted-foreground">
+                  Tasks by section
+                </span>
+                <button
+                  onClick={() => setShowAllSections((prev) => !prev)}
+                  className="text-xs text-muted-foreground hover:text-foreground underline underline-offset-4"
+                >
+                  {showAllSections ? "Hide empty sections" : "Show empty sections"}
+                </button>
+              </div>
+              {(showAllSections
+                ? SECTIONS
+                : SECTIONS.filter((section) =>
+                    tasks.some((t) => t.section === section)
+                  )
+              ).map((section) => (
                 <TaskSection
                   key={section}
                   section={section}
@@ -417,6 +434,11 @@ const SongDetail = () => {
                   onUpdate={handleRefresh}
                 />
               ))}
+              {!tasks.length && !showAllSections && (
+                <p className="text-sm text-muted-foreground px-2 py-4">
+                  No tasks yet. Use the smart input above to add your first task.
+                </p>
+              )}
             </div>
           </div>
 

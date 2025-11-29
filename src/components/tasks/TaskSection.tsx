@@ -17,7 +17,7 @@ export const TaskSection = ({
   songId,
   onUpdate,
 }: TaskSectionProps) => {
-  const [isExpanded, setIsExpanded] = useState(true);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   const sectionTasks = tasks
     .filter((t) => t.section === section)
@@ -27,7 +27,7 @@ export const TaskSection = ({
   const totalCount = sectionTasks.length;
 
   return (
-    <div className="mb-4 animate-fade-in">
+    <div className="mb-2 animate-fade-in">
       <button
         onClick={() => setIsExpanded(!isExpanded)}
         className="section-header w-full text-left"
