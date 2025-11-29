@@ -1,6 +1,10 @@
 import { supabase } from "@/lib/supabaseClient";
 import { Project, Song, Task } from "@/lib/types";
 
+const logSupabaseError = (context: string, error: unknown) => {
+  console.error(`[Supabase] ${context}`, error);
+};
+
 // Utility mappers between Supabase rows and app types
 const mapSong = (row: any): Song => ({
   id: row.id,
@@ -49,7 +53,7 @@ export const getSongs = async (userId: string): Promise<Song[]> => {
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (error) {
-    console.error("getSongs error", error);
+    logSupabaseError("getSongs", error);
     return [];
   }
   console.log("Loaded songs from Supabase", data?.length || 0);
@@ -67,7 +71,7 @@ export const getSongById = async (
     .eq("id", songId)
     .single();
   if (error) {
-    console.error("getSongById error", error);
+    logSupabaseError("getSongById", error);
     return null;
   }
   return mapSong(data);
@@ -100,7 +104,7 @@ export const createSong = async (
     .select("*")
     .single();
   if (error) {
-    console.error("createSong error", error);
+    logSupabaseError("createSong", error);
     return null;
   }
   return mapSong(data);
@@ -127,7 +131,7 @@ export const updateSong = async (
     .select()
     .single();
   if (error) {
-    console.error("updateSong error", error);
+    logSupabaseError("updateSong", error);
     return null;
   }
   return mapSong(data);
@@ -143,7 +147,7 @@ export const deleteSong = async (
     .eq("id", songId)
     .eq("user_id", userId);
   if (error) {
-    console.error("deleteSong error", error);
+    logSupabaseError("deleteSong", error);
   }
 };
 
@@ -160,7 +164,7 @@ export const getTasks = async (
     .order("order_position", { ascending: true })
     .order("created_at", { ascending: true });
   if (error) {
-    console.error("getTasks error", error);
+    logSupabaseError("getTasks", error);
     return [];
   }
   console.log("Loaded tasks from Supabase", data?.length || 0);
@@ -185,7 +189,7 @@ export const createTask = async (
     .select("*")
     .single();
   if (error) {
-    console.error("createTask error", error);
+    logSupabaseError("createTask", error);
     return null;
   }
   return mapTask(data);
@@ -209,7 +213,7 @@ export const updateTask = async (
     .select()
     .single();
   if (error) {
-    console.error("updateTask error", error);
+    logSupabaseError("updateTask", error);
     return null;
   }
   return mapTask(data);
@@ -225,7 +229,7 @@ export const deleteTask = async (
     .eq("id", taskId)
     .eq("user_id", userId);
   if (error) {
-    console.error("deleteTask error", error);
+    logSupabaseError("deleteTask", error);
   }
 };
 
@@ -237,7 +241,7 @@ export const getProjects = async (userId: string): Promise<Project[]> => {
     .eq("user_id", userId)
     .order("created_at", { ascending: true });
   if (error) {
-    console.error("getProjects error", error);
+    logSupabaseError("getProjects", error);
     return [];
   }
   return (data || []).map(mapProject);
@@ -254,7 +258,7 @@ export const getProjectById = async (
     .eq("id", projectId)
     .single();
   if (error) {
-    console.error("getProjectById error", error);
+    logSupabaseError("getProjectById", error);
     return null;
   }
   return mapProject(data);
@@ -274,7 +278,7 @@ export const createProject = async (
     .select("*")
     .single();
   if (error) {
-    console.error("createProject error", error);
+    logSupabaseError("createProject", error);
     return null;
   }
   return mapProject(data);
@@ -296,7 +300,7 @@ export const updateProject = async (
     .select("*")
     .single();
   if (error) {
-    console.error("updateProject error", error);
+    logSupabaseError("updateProject", error);
     return null;
   }
   return mapProject(data);
@@ -312,6 +316,6 @@ export const deleteProject = async (
     .eq("id", projectId)
     .eq("user_id", userId);
   if (error) {
-    console.error("deleteProject error", error);
+    logSupabaseError("deleteProject", error);
   }
 };

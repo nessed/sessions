@@ -12,7 +12,7 @@ import {
   updateTask,
 } from "@/lib/supabaseStore";
 import { Song, Task, SECTIONS, SECTION_LABELS, SongStatus } from "@/lib/types";
-import { ArrowLeft, Plus, Trash2 } from "lucide-react";
+import { ArrowLeft, Music2, Plus, Trash2 } from "lucide-react";
 import { StatusBadge } from "@/components/songs/StatusBadge";
 
 const SongDetail = () => {
@@ -58,6 +58,20 @@ const SongDetail = () => {
         section,
         tasks: tasks.filter((t) => t.section === section),
       })).filter((g) => g.tasks.length > 0),
+    [tasks]
+  );
+
+  const sectionProgress = useMemo(
+    () =>
+      SECTIONS.map((section) => {
+        const sectionTasks = tasks.filter((t) => t.section === section);
+        const done = sectionTasks.filter((t) => t.done).length;
+        const percent = sectionTasks.length
+          ? Math.round((done / sectionTasks.length) * 100)
+          : 0;
+
+        return { section, done, total: sectionTasks.length, percent };
+      }).filter((s) => s.total > 0),
     [tasks]
   );
 
@@ -139,10 +153,10 @@ const SongDetail = () => {
 
   return (
     <Layout>
-      <div className="max-w-5xl mx-auto pt-20 px-6 text-white">
+      <div className="max-w-6xl mx-auto pt-16 px-6 text-white space-y-8">
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-2 text-zinc-500 hover:text-white mb-6"
+          className="flex items-center gap-2 text-zinc-500 hover:text-white transition-colors"
         >
           <ArrowLeft className="w-4 h-4" />
           Back
@@ -150,64 +164,86 @@ const SongDetail = () => {
 
         {song ? (
           <>
-            <div className="relative h-[30vh] rounded-3xl overflow-hidden mb-10">
-              <div className="absolute inset-0 bg-gradient-to-b from-black/40 via-black/60 to-black" />
-              <div className="relative z-10 h-full flex flex-col justify-end p-8">
-                {isEditingTitle ? (
-                  <input
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                    onBlur={handleUpdateTitle}
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") handleUpdateTitle();
-                      if (e.key === "Escape") {
-                        setTitle(song.title);
-                        setIsEditingTitle(false);
-                      }
-                    }}
-                    autoFocus
-                    className="w-full bg-transparent text-7xl font-bold tracking-tighter outline-none"
-                  />
-                ) : (
-                  <h1
-                    className="text-7xl font-bold tracking-tighter text-white mb-4"
-                    onClick={() => setIsEditingTitle(true)}
-                  >
-                    {song.title}
-                  </h1>
-                )}
-                <div className="flex items-center gap-3 font-mono text-zinc-500 text-sm tracking-widest">
-                  <StatusBadge status={song.status as SongStatus} variant="minimal" className="text-zinc-400" />
-                  <span>/</span>
-                  <span>{song.bpm ? `${song.bpm} BPM` : "— BPM"}</span>
-                  <span>/</span>
-                  <span>{song.key ? song.key.toUpperCase() : "—"}</span>
+            <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-slate-950 via-slate-900 to-zinc-900 border border-white/5 shadow-2xl">
+              <div className="absolute inset-0 opacity-60 bg-[radial-gradient(circle_at_top_left,rgba(124,58,237,0.35),transparent_45%)]" />
+              <div className="absolute inset-0 opacity-50 bg-[radial-gradient(circle_at_bottom_right,rgba(16,185,129,0.35),transparent_40%)]" />
+              <div className="relative p-8 flex flex-col gap-6">
+                <div className="flex flex-col gap-6 md:flex-row md:items-start md:justify-between">
+                  <div className="flex items-start gap-4">
+                    <div className="h-16 w-16 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-white/70">
+                      <Music2 className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-3">
+                      {isEditingTitle ? (
+                        <input
+                          value={title}
+                          onChange={(e) => setTitle(e.target.value)}
+                          onBlur={handleUpdateTitle}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter") handleUpdateTitle();
+                            if (e.key === "Escape") {
+                              setTitle(song.title);
+                              setIsEditingTitle(false);
+                            }
+                          }}
+                          autoFocus
+                          className="w-full bg-transparent text-5xl md:text-6xl font-bold tracking-tighter outline-none"
+                        />
+                      ) : (
+                        <h1
+                          className="text-5xl md:text-6xl font-bold tracking-tighter text-white cursor-text"
+                          onClick={() => setIsEditingTitle(true)}
+                        >
+                          {song.title}
+                        </h1>
+                      )}
+                      <div className="flex items-center flex-wrap gap-3 text-sm text-zinc-300">
+                        <StatusBadge status={song.status as SongStatus} variant="minimal" className="text-zinc-200" />
+                        <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                        <span>{song.bpm ? `${song.bpm} BPM` : "No BPM"}</span>
+                        <span className="h-1 w-1 rounded-full bg-zinc-700" />
+                        <span>{song.key ? song.key.toUpperCase() : "Key TBD"}</span>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="text-right space-y-2">
+                    <div className="text-xs uppercase tracking-[0.3em] text-zinc-500">Progress</div>
+                    <div className="text-4xl font-display font-semibold">{progress}%</div>
+                    <div className="w-48 h-2 rounded-full bg-white/10 overflow-hidden ml-auto">
+                      <div
+                        className="h-full bg-gradient-to-r from-emerald-400 to-indigo-400"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
                 </div>
-                <div className="mt-4 h-px bg-white/10 w-full overflow-hidden">
-                  <div className="h-full bg-white" style={{ width: `${progress}%` }} />
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-zinc-200">
+                  <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3 shadow-inner">
+                    <div className="text-xs uppercase tracking-[0.25em] text-zinc-500">Tasks</div>
+                    <div className="text-2xl font-display font-semibold">{tasks.length}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3 shadow-inner">
+                    <div className="text-xs uppercase tracking-[0.25em] text-zinc-500">Done</div>
+                    <div className="text-2xl font-display font-semibold">{tasks.filter((t) => t.done).length}</div>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-white/5 px-4 py-3 shadow-inner">
+                    <div className="text-xs uppercase tracking-[0.25em] text-zinc-500">Sections</div>
+                    <div className="text-2xl font-display font-semibold">{sectionProgress.length || 0}</div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="grid grid-cols-[1fr_300px] gap-12 mt-12">
-              <div className="space-y-6">
-                <div className="flex items-center gap-6 text-sm">
-                  {(["tasks", "lyrics", "notes"] as const).map((tab) => (
-                    <span
-                      key={tab}
-                      className={
-                        tab === "tasks"
-                          ? "text-white border-b border-white pb-1"
-                          : "text-zinc-600 pb-1"
-                      }
-                    >
-                      {tab.toUpperCase()}
-                    </span>
-                  ))}
-                </div>
-
-                <div className="space-y-4">
-                  <div className="flex items-center gap-2 border-b border-zinc-800 pb-2">
+            <div className="grid grid-cols-1 lg:grid-cols-[1.7fr_1fr] gap-8">
+              <div className="rounded-2xl border border-white/5 bg-gradient-to-b from-zinc-900/60 to-zinc-900/30 shadow-xl">
+                <div className="flex flex-col gap-4 border-b border-white/5 px-6 py-5 sm:flex-row sm:items-center sm:justify-between">
+                  <div>
+                    <div className="text-xs uppercase tracking-[0.3em] text-zinc-500">Tasks</div>
+                    <h2 className="text-xl font-display font-semibold">What’s next</h2>
+                  </div>
+                  <div className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-full px-4 py-2">
                     <input
                       value={quickTask}
                       onChange={(e) => setQuickTask(e.target.value)}
@@ -217,73 +253,103 @@ const SongDetail = () => {
                           handleQuickAdd();
                         }
                       }}
-                      placeholder='Add task... (e.g., "Mix vocals")'
-                      className="w-full bg-transparent text-sm text-white outline-none placeholder:text-zinc-600"
+                      placeholder='Add task… (e.g., "Mix vocals")'
+                      className="w-full bg-transparent text-sm text-white outline-none placeholder:text-zinc-500"
                     />
                     <button
                       onClick={handleQuickAdd}
-                      className="text-zinc-500 hover:text-white"
+                      className="p-1.5 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
                     >
                       <Plus className="w-4 h-4" />
                     </button>
                   </div>
+                </div>
 
-                  <div className="space-y-3">
-                    {groupedTasks.map((group) => (
-                      <div key={group.section}>
-                        <div className="text-xs uppercase text-zinc-600 tracking-[0.2em] mb-2">
-                          {SECTION_LABELS[group.section]}
-                        </div>
-                        <div className="space-y-1">
-                          {group.tasks.map((task) => (
-                            <div
-                              key={task.id}
-                              className="flex items-center justify-between text-zinc-300 hover:text-white transition-colors"
-                            >
-                              <div className="flex items-center gap-3">
-                                <button
-                                  onClick={() => toggleTask(task)}
-                                  className="w-4 h-4 rounded-full border border-zinc-700 flex items-center justify-center hover:border-white"
-                                >
-                                  {task.done && <span className="w-2 h-2 rounded-full bg-primary" />}
-                                </button>
-                                <span className={task.done ? "opacity-40" : ""}>
-                                  {task.title}
-                                </span>
-                              </div>
-                              <button
-                                onClick={() => removeTask(task.id)}
-                                className="text-zinc-600 hover:text-red-400"
-                              >
-                                <Trash2 className="w-4 h-4" />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
+                <div className="px-6 py-5 space-y-6">
+                  {groupedTasks.map((group) => (
+                    <div key={group.section} className="space-y-3">
+                      <div className="flex items-center justify-between text-xs uppercase tracking-[0.25em] text-zinc-500">
+                        <span>{SECTION_LABELS[group.section]}</span>
+                        <span className="text-zinc-600">{group.tasks.filter((t) => t.done).length}/{group.tasks.length}</span>
                       </div>
-                    ))}
-                    {!groupedTasks.length && (
-                      <p className="text-sm text-zinc-500">
-                        No tasks yet. Add one above.
-                      </p>
-                    )}
-                  </div>
+                      <div className="space-y-2">
+                        {group.tasks.map((task) => (
+                          <div
+                            key={task.id}
+                            className="flex items-center justify-between rounded-xl bg-white/5 border border-white/5 px-4 py-3 text-sm text-zinc-200 hover:border-emerald-300/40 transition-colors"
+                          >
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => toggleTask(task)}
+                                className="w-5 h-5 rounded-full border border-zinc-600 flex items-center justify-center bg-black/30 hover:border-emerald-300"
+                              >
+                                {task.done && <span className="w-2.5 h-2.5 rounded-full bg-emerald-400" />}
+                              </button>
+                              <span className={task.done ? "opacity-50 line-through" : ""}>{task.title}</span>
+                            </div>
+                            <button
+                              onClick={() => removeTask(task.id)}
+                              className="text-zinc-600 hover:text-red-300"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </button>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+
+                  {!groupedTasks.length && (
+                    <div className="text-sm text-zinc-500">No tasks yet. Add one above.</div>
+                  )}
                 </div>
               </div>
 
-              <div className="space-y-6 text-xs text-zinc-500 font-mono">
-                <div className="space-y-2">
-                  <div className="text-sm text-white">Song</div>
+              <div className="space-y-6">
+                <div className="rounded-2xl border border-white/5 bg-gradient-to-b from-zinc-900/70 to-zinc-900/30 shadow-xl">
+                  <div className="px-6 py-5 border-b border-white/5">
+                    <div className="text-xs uppercase tracking-[0.3em] text-zinc-500">Section progress</div>
+                    <h3 className="text-lg font-display font-semibold">Where you’re at</h3>
+                  </div>
+                  <div className="px-6 py-5 space-y-4">
+                    {sectionProgress.length ? (
+                      sectionProgress.map((section) => (
+                        <div key={section.section} className="space-y-2">
+                          <div className="flex items-center justify-between text-sm text-zinc-200">
+                            <span>{SECTION_LABELS[section.section]}</span>
+                            <span className="text-zinc-500">{section.percent}%</span>
+                          </div>
+                          <div className="h-2 rounded-full bg-white/5 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-indigo-400 to-emerald-400"
+                              style={{ width: `${section.percent}%` }}
+                            />
+                          </div>
+                          <div className="text-[11px] uppercase tracking-[0.25em] text-zinc-600">
+                            {section.done} done / {section.total} tasks
+                          </div>
+                        </div>
+                      ))
+                    ) : (
+                      <p className="text-sm text-zinc-500">No section activity yet.</p>
+                    )}
+                  </div>
+                </div>
+
+                <div className="rounded-2xl border border-white/5 bg-white/5 px-6 py-5 text-sm text-zinc-300 shadow-xl">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <div className="text-xs uppercase tracking-[0.3em] text-zinc-500">Song</div>
+                      <div className="text-lg font-display font-semibold">Manage</div>
+                    </div>
+                    <StatusBadge status={song.status as SongStatus} variant="minimal" className="text-zinc-200" />
+                  </div>
                   <button
                     onClick={handleDeleteSong}
-                    className="text-red-400 hover:text-red-200 flex items-center gap-1"
+                    className="flex items-center gap-2 text-red-300 hover:text-red-200"
                   >
                     <Trash2 className="w-4 h-4" /> Delete song
                   </button>
-                </div>
-                <div className="space-y-2">
-                  <div className="text-sm text-white">Versions</div>
-                  <p className="text-zinc-600">Not implemented</p>
                 </div>
               </div>
             </div>
