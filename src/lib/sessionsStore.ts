@@ -42,8 +42,13 @@ export const loadDB = (): SessionsDB => {
       saveDB(defaultDB);
       return defaultDB;
     }
-    return JSON.parse(data);
+    const parsed = JSON.parse(data);
+    return parsed;
   } catch {
+    // If parsing fails, clear the bad snapshot to avoid overwriting it later
+    // with an empty state that looks like "corruption" to the user.
+    localStorage.removeItem(DB_KEY);
+    saveDB(defaultDB);
     return defaultDB;
   }
 };
@@ -122,6 +127,7 @@ export const updateSong = (id: string, updates: Partial<Song>): Song | null => {
 
 export const deleteSong = (id: string): void => {
   const db = loadDB();
+  const song = db.songs.find((s) => s.id === id);
   db.songs = db.songs.filter((s) => s.id !== id);
   db.tasks = db.tasks.filter((t) => t.songId !== id);
   db.notes = db.notes.filter((n) => n.songId !== id);
@@ -504,7 +510,7 @@ export const createAttachment = (
   };
   db.attachments.push(attachment);
   saveDB(db);
-  logActivity("created", "song", attachment.id, name);
+  logActivity("created", "attachment", attachment.id, name);
   return attachment;
 };
 
