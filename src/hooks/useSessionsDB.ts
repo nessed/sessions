@@ -1,28 +1,30 @@
-import { useState, useEffect, useCallback } from "react";
-import { loadDB, getSettings, updateSettings as saveSettings } from "@/lib/sessionsStore";
+import { useState, useEffect } from "react";
 import { SessionsDB, Settings } from "@/lib/types";
 
+const emptyDB: SessionsDB = {
+  songs: [],
+  projects: [],
+  tasks: [],
+  notes: [],
+  versions: [],
+  attachments: [],
+  activities: [],
+  templates: [],
+  settings: {
+    theme: "dark",
+    aurasEnabled: true,
+  },
+};
+
 export const useSessionsDB = () => {
-  const [db, setDb] = useState<SessionsDB>(loadDB);
-  const [saved, setSaved] = useState(false);
-
-  const refresh = useCallback(() => {
-    setDb(loadDB());
-    setSaved(true);
-    setTimeout(() => setSaved(false), 1500);
-  }, []);
-
-  useEffect(() => {
-    const handleUpdate = () => refresh();
-    window.addEventListener("sessionsDBUpdated", handleUpdate);
-    return () => window.removeEventListener("sessionsDBUpdated", handleUpdate);
-  }, [refresh]);
-
+  const [db] = useState<SessionsDB>(emptyDB);
+  const [saved] = useState(false);
+  const refresh = () => {};
   return { db, refresh, saved };
 };
 
 export const useTheme = () => {
-  const [settings, setSettings] = useState<Settings>(getSettings);
+  const [settings, setSettings] = useState<Settings>(emptyDB.settings);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -35,20 +37,12 @@ export const useTheme = () => {
 
   const toggleTheme = () => {
     const newTheme = settings.theme === "dark" ? "light" : "dark";
-    const updated = saveSettings({ theme: newTheme });
-    setSettings(updated);
+    setSettings((prev) => ({ ...prev, theme: newTheme }));
   };
 
   const toggleAuras = () => {
-    const updated = saveSettings({ aurasEnabled: !settings.aurasEnabled });
-    setSettings(updated);
+    setSettings((prev) => ({ ...prev, aurasEnabled: !prev.aurasEnabled }));
   };
-
-  useEffect(() => {
-    const handleUpdate = () => setSettings(getSettings());
-    window.addEventListener("sessionsDBUpdated", handleUpdate);
-    return () => window.removeEventListener("sessionsDBUpdated", handleUpdate);
-  }, []);
 
   return { settings, toggleTheme, toggleAuras };
 };

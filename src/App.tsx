@@ -4,7 +4,6 @@ import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { useEffect } from "react";
-import { getSettings } from "@/lib/sessionsStore";
 import Index from "./pages/Index";
 import SongDetail from "./pages/SongDetail";
 import AllSongs from "./pages/AllSongs";
@@ -25,12 +24,7 @@ const queryClient = new QueryClient();
 
 const ThemeInitializer = () => {
   useEffect(() => {
-    const settings = getSettings();
-    if (settings.theme === "dark") {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
+    document.documentElement.classList.add("dark");
   }, []);
   return null;
 };

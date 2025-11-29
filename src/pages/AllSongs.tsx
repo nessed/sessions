@@ -1,41 +1,53 @@
-import { useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
 import { StatusBadge } from "@/components/songs/StatusBadge";
-import { ProgressBar } from "@/components/songs/ProgressBar";
-import { useSessionsDB } from "@/hooks/useSessionsDB";
-import { getSongProgress } from "@/lib/sessionsStore";
 import { Song, SongStatus, SECTIONS, SECTION_LABELS } from "@/lib/types";
 import { formatDistanceToNow } from "date-fns";
-import { Music, ArrowUpDown, Filter } from "lucide-react";
+import { Music, Filter } from "lucide-react";
+import { useAuth } from "@/auth/AuthProvider";
+import { getSongs } from "@/lib/supabaseStore";
 
 type SortField = "title" | "updatedAt" | "status";
 type SortOrder = "asc" | "desc";
 
 const AllSongs = () => {
-  const { db } = useSessionsDB();
+  const { user } = useAuth();
+  const [songs, setSongs] = useState<Song[]>([]);
   const [statusFilter, setStatusFilter] = useState<SongStatus | "all">("all");
   const [sortField, setSortField] = useState<SortField>("updatedAt");
   const [sortOrder, setSortOrder] = useState<SortOrder>("desc");
 
-  const getProject = (projectId?: string) => {
-    if (!projectId) return undefined;
-    return db.projects.find((p) => p.id === projectId);
-  };
-
-  const filteredSongs = db.songs
-    .filter((song) => statusFilter === "all" || song.status === statusFilter)
-    .sort((a, b) => {
-      let comparison = 0;
-      if (sortField === "title") {
-        comparison = a.title.localeCompare(b.title);
-      } else if (sortField === "updatedAt") {
-        comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
-      } else if (sortField === "status") {
-        comparison = SECTIONS.indexOf(a.status) - SECTIONS.indexOf(b.status);
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      try {
+        const data = await getSongs(user.id);
+        setSongs(data);
+      } catch (error) {
+        console.error("Failed to load songs in AllSongs", error);
       }
-      return sortOrder === "asc" ? comparison : -comparison;
-    });
+    };
+    load();
+  }, [user]);
+
+  const filteredSongs = useMemo(
+    () =>
+      songs
+        .filter((song) => statusFilter === "all" || song.status === statusFilter)
+        .sort((a, b) => {
+          let comparison = 0;
+          if (sortField === "title") {
+            comparison = a.title.localeCompare(b.title);
+          } else if (sortField === "updatedAt") {
+            comparison = new Date(a.updatedAt).getTime() - new Date(b.updatedAt).getTime();
+          } else if (sortField === "status") {
+            comparison = SECTIONS.indexOf(a.status) - SECTIONS.indexOf(b.status);
+          }
+          return sortOrder === "asc" ? comparison : -comparison;
+        }),
+    [songs, sortField, sortOrder, statusFilter]
+  );
 
   const toggleSort = (field: SortField) => {
     if (sortField === field) {
@@ -109,9 +121,6 @@ const AllSongs = () => {
           <div className="glass-panel overflow-hidden">
             <div className="divide-y divide-border">
               {filteredSongs.map((song) => {
-                const project = getProject(song.projectId);
-                const progress = getSongProgress(song.id);
-
                 return (
                   <Link
                     key={song.id}
@@ -134,9 +143,6 @@ const AllSongs = () => {
                       {project && (
                         <p className="text-sm text-muted-foreground truncate">{project.title}</p>
                       )}
-                    </div>
-                    <div className="hidden md:block w-32">
-                      <ProgressBar progress={progress} showLabel={false} />
                     </div>
                     <StatusBadge status={song.status} />
                     <span className="text-sm text-muted-foreground hidden sm:block">

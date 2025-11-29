@@ -1,24 +1,22 @@
 import { useState } from "react";
 import { Plus } from "lucide-react";
-import { createSong } from "@/lib/sessionsStore";
 
 interface NewSongInputProps {
   projectId?: string;
-  onCreated?: () => void;
+  onCreated?: (title: string) => Promise<boolean | void> | boolean | void;
 }
 
 export const NewSongInput = ({ projectId, onCreated }: NewSongInputProps) => {
   const [title, setTitle] = useState("");
   const [isExpanded, setIsExpanded] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-
-    createSong(title.trim(), projectId);
+    const result = await onCreated?.(title.trim());
+    if (result === false) return;
     setTitle("");
     setIsExpanded(false);
-    onCreated?.();
   };
 
   if (!isExpanded) {
