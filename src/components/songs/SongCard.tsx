@@ -15,15 +15,22 @@ export const SongCard = ({ song, project }: SongCardProps) => {
   const progress = getSongProgress(song.id);
 
   return (
-    <Link to={`/song/${song.id}`} className="song-card block animate-fade-in">
+    <Link
+      to={`/song/${song.id}`}
+      className="song-card block animate-fade-in aurora-glow"
+    >
       <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 to-aura-peach/20 flex items-center justify-center flex-shrink-0">
-          <Music className="w-6 h-6 text-primary" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 via-aura-lavender/20 to-aura-peach/30 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+          <Music className="w-6 h-6 text-primary relative z-10" />
         </div>
         <div className="flex-1 min-w-0">
-          <h3 className="font-display font-semibold text-lg truncate">{song.title}</h3>
+          <h3 className="font-display font-semibold text-lg truncate">
+            {song.title}
+          </h3>
           {project && (
-            <p className="text-sm text-muted-foreground truncate">{project.title}</p>
+            <p className="text-sm text-muted-foreground truncate">
+              {project.title}
+            </p>
           )}
         </div>
         <StatusBadge status={song.status} />
@@ -45,16 +52,17 @@ export const SongCard = ({ song, project }: SongCardProps) => {
 
       {song.moodTags.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
-          {song.moodTags.slice(0, 3).map((tag) => (
+          {song.moodTags.slice(0, 3).map((tag, index) => (
             <span
               key={tag}
-              className="px-2 py-0.5 text-xs rounded-full bg-muted text-muted-foreground"
+              className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-primary/10 via-aura-lavender/10 to-aura-teal/10 text-muted-foreground border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105"
+              style={{ animationDelay: `${index * 0.1}s` }}
             >
               {tag}
             </span>
           ))}
           {song.moodTags.length > 3 && (
-            <span className="px-2 py-0.5 text-xs rounded-full bg-muted text-muted-foreground">
+            <span className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-primary/10 via-aura-lavender/10 to-aura-teal/10 text-muted-foreground border border-primary/20">
               +{song.moodTags.length - 3}
             </span>
           )}

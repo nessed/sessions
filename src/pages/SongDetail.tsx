@@ -2,8 +2,10 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useState, useEffect } from "react";
 import { Layout } from "@/components/layout/Layout";
 import { TaskSection } from "@/components/tasks/TaskSection";
+import { SmartTaskInput } from "@/components/tasks/SmartTaskInput";
 import { StatusBadge } from "@/components/songs/StatusBadge";
 import { ProgressBar } from "@/components/songs/ProgressBar";
+import { SectionProgressIndicator } from "@/components/songs/SectionProgressIndicator";
 import { useSessionsDB } from "@/hooks/useSessionsDB";
 import {
   getSong,
@@ -18,9 +20,19 @@ import {
   createVersion,
   deleteVersion,
 } from "@/lib/sessionsStore";
-import { Song, Task, Note, Version, SECTIONS, SECTION_LABELS, SongStatus } from "@/lib/types";
+import {
+  Song,
+  Task,
+  Note,
+  Version,
+  SECTIONS,
+  SECTION_LABELS,
+  SongStatus,
+} from "@/lib/types";
 import { ArrowLeft, Trash2, Plus, X, ExternalLink } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PrioritySelector } from "@/components/ui/priority-selector";
+import { DatePicker } from "@/components/ui/date-picker";
 
 const SongDetail = () => {
   const { id } = useParams<{ id: string }>();
@@ -55,11 +67,14 @@ const SongDetail = () => {
 
   const handleRefresh = () => {
     if (id) {
-      setSong(getSong(id));
-      setTasks(getTasksBySong(id));
-      const songNotes = getNotesBySong(id);
-      setNotes(songNotes);
-      setVersions(getVersionsBySong(id));
+      // Use a small delay to ensure DB is updated
+      setTimeout(() => {
+        setSong(getSong(id));
+        setTasks(getTasksBySong(id));
+        const songNotes = getNotesBySong(id);
+        setNotes(songNotes);
+        setVersions(getVersionsBySong(id));
+      }, 0);
     }
     refresh();
   };
@@ -79,7 +94,10 @@ const SongDetail = () => {
     }
   };
 
-  const handleUpdateField = (field: keyof Song, value: string | number | undefined) => {
+  const handleUpdateField = (
+    field: keyof Song,
+    value: string | number | undefined
+  ) => {
     if (song) {
       updateSong(song.id, { [field]: value || undefined });
       handleRefresh();
@@ -201,31 +219,46 @@ const SongDetail = () => {
                 <ProgressBar progress={progress} />
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider">Status</label>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Status
+                  </label>
                   <select
                     value={song.status}
-                    onChange={(e) => handleUpdateStatus(e.target.value as SongStatus)}
+                    onChange={(e) =>
+                      handleUpdateStatus(e.target.value as SongStatus)
+                    }
                     className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                   >
                     {SECTIONS.map((s) => (
-                      <option key={s} value={s}>{SECTION_LABELS[s]}</option>
+                      <option key={s} value={s}>
+                        {SECTION_LABELS[s]}
+                      </option>
                     ))}
                   </select>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider">BPM</label>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                    BPM
+                  </label>
                   <input
                     type="number"
                     value={song.bpm || ""}
-                    onChange={(e) => handleUpdateField("bpm", e.target.value ? parseInt(e.target.value) : undefined)}
+                    onChange={(e) =>
+                      handleUpdateField(
+                        "bpm",
+                        e.target.value ? parseInt(e.target.value) : undefined
+                      )
+                    }
                     placeholder="120"
                     className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider">Key</label>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Key
+                  </label>
                   <input
                     type="text"
                     value={song.key || ""}
@@ -235,23 +268,54 @@ const SongDetail = () => {
                   />
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider">Project</label>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Project
+                  </label>
                   <select
                     value={song.projectId || ""}
-                    onChange={(e) => handleUpdateField("projectId", e.target.value)}
+                    onChange={(e) =>
+                      handleUpdateField("projectId", e.target.value)
+                    }
                     className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                   >
                     <option value="">None</option>
                     {db.projects.map((p) => (
-                      <option key={p.id} value={p.id}>{p.title}</option>
+                      <option key={p.id} value={p.id}>
+                        {p.title}
+                      </option>
                     ))}
                   </select>
                 </div>
               </div>
 
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+                <div>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
+                    Priority
+                  </label>
+                  <PrioritySelector
+                    value={song.priority}
+                    onChange={(priority) =>
+                      handleUpdateField("priority", priority)
+                    }
+                  />
+                </div>
+                <div>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider mb-2 block">
+                    Due Date
+                  </label>
+                  <DatePicker
+                    value={song.dueDate}
+                    onChange={(date) => handleUpdateField("dueDate", date)}
+                  />
+                </div>
+              </div>
+
               {/* Mood Tags */}
               <div className="mb-6">
-                <label className="text-xs text-muted-foreground uppercase tracking-wider">Mood Tags</label>
+                <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                  Mood Tags
+                </label>
                 <div className="mt-2 flex flex-wrap gap-2">
                   {song.moodTags.map((tag) => (
                     <span
@@ -286,12 +350,16 @@ const SongDetail = () => {
               {/* Links */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider">Project File Link</label>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Project File Link
+                  </label>
                   <div className="mt-1 flex items-center gap-2">
                     <input
                       type="url"
                       value={song.projectFileLink || ""}
-                      onChange={(e) => handleUpdateField("projectFileLink", e.target.value)}
+                      onChange={(e) =>
+                        handleUpdateField("projectFileLink", e.target.value)
+                      }
                       placeholder="https://..."
                       className="flex-1 bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -308,12 +376,16 @@ const SongDetail = () => {
                   </div>
                 </div>
                 <div>
-                  <label className="text-xs text-muted-foreground uppercase tracking-wider">Drive Link</label>
+                  <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                    Drive Link
+                  </label>
                   <div className="mt-1 flex items-center gap-2">
                     <input
                       type="url"
                       value={song.driveLink || ""}
-                      onChange={(e) => handleUpdateField("driveLink", e.target.value)}
+                      onChange={(e) =>
+                        handleUpdateField("driveLink", e.target.value)
+                      }
                       placeholder="https://..."
                       className="flex-1 bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
                     />
@@ -335,6 +407,7 @@ const SongDetail = () => {
             {/* Tasks */}
             <div className="glass-panel p-6">
               <h2 className="text-xl font-display font-semibold mb-4">Tasks</h2>
+              <SmartTaskInput songId={song.id} onCreated={handleRefresh} />
               {SECTIONS.map((section) => (
                 <TaskSection
                   key={section}
@@ -349,6 +422,11 @@ const SongDetail = () => {
 
           {/* Sidebar */}
           <div className="space-y-6">
+            {/* Section Progress */}
+            <div className="glass-panel p-6">
+              <SectionProgressIndicator songId={song.id} />
+            </div>
+
             {/* Notes */}
             <div className="glass-panel p-6">
               <h2 className="text-xl font-display font-semibold mb-4">Notes</h2>
@@ -401,7 +479,9 @@ const SongDetail = () => {
 
               <div className="space-y-2">
                 {versions.length === 0 && !isAddingVersion ? (
-                  <p className="text-sm text-muted-foreground">No versions yet</p>
+                  <p className="text-sm text-muted-foreground">
+                    No versions yet
+                  </p>
                 ) : (
                   versions.map((version) => (
                     <div

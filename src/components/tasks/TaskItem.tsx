@@ -1,8 +1,16 @@
 import { useState } from "react";
 import { Task } from "@/lib/types";
-import { toggleTaskDone, updateTask, deleteTask } from "@/lib/sessionsStore";
-import { Check, Trash2, Calendar } from "lucide-react";
+import {
+  toggleTaskDone,
+  updateTask,
+  deleteTask,
+  canCompleteTask,
+} from "@/lib/sessionsStore";
+import { Check, Trash2, Calendar, AlertCircle, Clock } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { PrioritySelector } from "@/components/ui/priority-selector";
+import { DatePicker } from "@/components/ui/date-picker";
+import { formatDistanceToNow } from "date-fns";
 
 interface TaskItemProps {
   task: Task;
@@ -14,6 +22,16 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
   const [title, setTitle] = useState(task.title);
 
   const handleToggle = () => {
+    const { canComplete: canDo, blockingTasks } = canCompleteTask(task.id);
+    if (!canDo && !task.done) {
+      // Show warning about blocking tasks
+      alert(
+        `Cannot complete this task. Blocking tasks: ${blockingTasks
+          .map((t) => t.title)
+          .join(", ")}`
+      );
+      return;
+    }
     toggleTaskDone(task.id);
     onUpdate?.();
   };
@@ -41,13 +59,17 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
       <button
         onClick={handleToggle}
         className={cn(
-          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0",
+          "w-5 h-5 rounded-full border-2 flex items-center justify-center transition-all flex-shrink-0 relative overflow-hidden",
           task.done
-            ? "bg-primary border-primary"
-            : "border-muted-foreground/30 hover:border-primary"
+            ? "bg-gradient-to-br from-primary to-aura-lavender border-primary shadow-lg"
+            : "border-muted-foreground/30 hover:border-primary hover:bg-primary/10"
         )}
       >
-        {task.done && <Check className="w-3 h-3 text-primary-foreground" />}
+        {task.done && (
+          <>
+            <Check className="w-3 h-3 text-primary-foreground relative z-10" />
+          </>
+        )}
       </button>
 
       {isEditing ? (
@@ -67,15 +89,52 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
           className="flex-1 bg-transparent outline-none"
         />
       ) : (
-        <span
-          onClick={() => setIsEditing(true)}
-          className={cn(
-            "flex-1 cursor-text",
-            task.done && "line-through"
-          )}
-        >
-          {task.title}
-        </span>
+        <div className="flex-1 min-w-0">
+          <span
+            onClick={() => setIsEditing(true)}
+            className={cn("cursor-text block", task.done && "line-through")}
+          >
+            {task.title}
+          </span>
+          <div className="flex items-center gap-2 mt-1">
+            {task.priority && (
+              <span
+                className={cn(
+                  "text-xs px-1.5 py-0.5 rounded",
+                  task.priority === "urgent" && "bg-red-500/10 text-red-500",
+                  task.priority === "high" &&
+                    "bg-orange-500/10 text-orange-500",
+                  task.priority === "medium" &&
+                    "bg-yellow-500/10 text-yellow-500",
+                  task.priority === "low" && "bg-blue-500/10 text-blue-500"
+                )}
+              >
+                {task.priority}
+              </span>
+            )}
+            {task.dueDate && (
+              <span
+                className={cn(
+                  "text-xs",
+                  new Date(task.dueDate) < new Date() && !task.done
+                    ? "text-destructive"
+                    : "text-muted-foreground"
+                )}
+              >
+                Due{" "}
+                {formatDistanceToNow(new Date(task.dueDate), {
+                  addSuffix: true,
+                })}
+              </span>
+            )}
+            {task.actualTime && (
+              <span className="text-xs text-muted-foreground flex items-center gap-1">
+                <Clock className="w-3 h-3" />
+                {Math.round(task.actualTime)}m
+              </span>
+            )}
+          </div>
+        </div>
       )}
 
       <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">

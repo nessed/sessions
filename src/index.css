@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap');
+@import url("https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700&family=Space+Grotesk:wght@400;500;600;700&display=swap");
 
 @tailwind base;
 @tailwind components;
@@ -36,16 +36,16 @@
 
     --radius: 1rem;
 
-    /* Custom aura colors */
-    --aura-lavender: 265 70% 75%;
-    --aura-peach: 20 90% 85%;
-    --aura-teal: 175 60% 80%;
-    --aura-rose: 340 70% 85%;
-    --aura-mint: 155 60% 85%;
+    /* Custom aura colors - more vibrant */
+    --aura-lavender: 265 75% 70%;
+    --aura-peach: 20 95% 80%;
+    --aura-teal: 175 65% 75%;
+    --aura-rose: 340 75% 80%;
+    --aura-mint: 155 65% 80%;
 
     /* Glass effect */
-    --glass-bg: 0 0% 100% / 0.7;
-    --glass-border: 0 0% 100% / 0.3;
+    --glass-bg: 0 0% 100% / 0.75;
+    --glass-border: 265 50% 80% / 0.4;
 
     /* Status colors */
     --status-idea: 265 60% 65%;
@@ -95,16 +95,16 @@
     --input: 235 30% 18%;
     --ring: 265 70% 65%;
 
-    /* Dark aura colors */
-    --aura-lavender: 265 50% 35%;
-    --aura-peach: 15 60% 30%;
-    --aura-teal: 185 50% 25%;
-    --aura-rose: 340 50% 30%;
-    --aura-mint: 155 40% 25%;
+    /* Dark aura colors - more vibrant */
+    --aura-lavender: 265 60% 45%;
+    --aura-peach: 15 70% 40%;
+    --aura-teal: 185 60% 35%;
+    --aura-rose: 340 60% 40%;
+    --aura-mint: 155 50% 35%;
 
     /* Dark glass effect */
-    --glass-bg: 235 40% 12% / 0.8;
-    --glass-border: 265 50% 40% / 0.2;
+    --glass-bg: 235 40% 12% / 0.85;
+    --glass-border: 265 60% 50% / 0.3;
 
     /* Dark status colors */
     --status-idea: 265 60% 55%;
@@ -132,25 +132,55 @@
   }
 
   html {
-    font-family: 'Plus Jakarta Sans', sans-serif;
+    font-family: "Plus Jakarta Sans", sans-serif;
   }
 
   body {
     @apply bg-background text-foreground antialiased;
+    transition: background-color 0.5s ease, color 0.5s ease;
   }
 
-  h1, h2, h3, h4, h5, h6 {
-    font-family: 'Space Grotesk', sans-serif;
+  body::before {
+    content: "";
+    @apply fixed inset-0 -z-20 pointer-events-none;
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--primary) / 0.02),
+      transparent 70%
+    );
+  }
+
+  h1,
+  h2,
+  h3,
+  h4,
+  h5,
+  h6 {
+    font-family: "Space Grotesk", sans-serif;
   }
 }
 
 @layer components {
   .glass-panel {
-    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-xl border border-[hsl(var(--glass-border))] rounded-2xl shadow-xl;
+    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-lg border border-[hsl(var(--glass-border))] rounded-2xl shadow-xl;
+    position: relative;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s ease;
+    will-change: transform;
+  }
+
+  .glass-panel:hover {
+    transform: translateY(-2px) translateZ(0);
+    box-shadow: 0 15px 40px -12px hsl(var(--primary) / 0.25);
   }
 
   .glass-panel-subtle {
-    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-md border border-[hsl(var(--glass-border))] rounded-xl;
+    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-sm border border-[hsl(var(--glass-border))] rounded-xl;
+    transition: box-shadow 0.2s ease;
+  }
+
+  .glass-panel-subtle:hover {
+    box-shadow: 0 8px 24px -8px hsl(var(--primary) / 0.15);
   }
 
   .aura-background {
@@ -158,139 +188,273 @@
   }
 
   .aura-background::before {
-    content: '';
+    content: "";
     @apply absolute inset-0 -z-10;
-    background: 
-      radial-gradient(ellipse 80% 60% at 10% 20%, hsl(var(--aura-lavender) / 0.4), transparent 50%),
-      radial-gradient(ellipse 60% 80% at 90% 80%, hsl(var(--aura-peach) / 0.35), transparent 50%),
-      radial-gradient(ellipse 70% 50% at 50% 50%, hsl(var(--aura-teal) / 0.25), transparent 50%),
-      radial-gradient(ellipse 50% 70% at 80% 20%, hsl(var(--aura-rose) / 0.3), transparent 50%);
-    animation: aura-float 20s ease-in-out infinite;
+    background: radial-gradient(
+        ellipse 120% 90% at 10% 20%,
+        hsl(var(--aura-lavender) / 0.5),
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 90% 110% at 90% 80%,
+        hsl(var(--aura-peach) / 0.45),
+        transparent 55%
+      ),
+      radial-gradient(
+        ellipse 100% 80% at 50% 50%,
+        hsl(var(--aura-teal) / 0.35),
+        transparent 55%
+      );
+    background-size: 200% 200%;
+    animation: aurora-flow 40s ease infinite;
+    filter: blur(50px);
+    will-change: background-position;
+    transform: translateZ(0);
+  }
+
+  .aura-background::after {
+    content: "";
+    @apply absolute inset-0 -z-10;
+    background: radial-gradient(
+        ellipse 140% 110% at 20% 30%,
+        hsl(var(--aura-lavender) / 0.3),
+        transparent 65%
+      ),
+      radial-gradient(
+        ellipse 110% 130% at 80% 70%,
+        hsl(var(--aura-peach) / 0.25),
+        transparent 65%
+      );
+    background-size: 300% 300%;
+    animation: aurora-flow 50s ease infinite reverse;
+    filter: blur(60px);
+    opacity: 0.6;
+    will-change: background-position;
+    transform: translateZ(0);
   }
 
   .status-badge {
     @apply px-2.5 py-1 text-xs font-medium rounded-full;
+    position: relative;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+    will-change: transform;
   }
 
-  .status-idea { @apply bg-[hsl(var(--status-idea)/0.15)] text-[hsl(var(--status-idea))]; }
-  .status-writing { @apply bg-[hsl(var(--status-writing)/0.15)] text-[hsl(var(--status-writing))]; }
-  .status-recording { @apply bg-[hsl(var(--status-recording)/0.15)] text-[hsl(var(--status-recording))]; }
-  .status-production { @apply bg-[hsl(var(--status-production)/0.15)] text-[hsl(var(--status-production))]; }
-  .status-mixing { @apply bg-[hsl(var(--status-mixing)/0.15)] text-[hsl(var(--status-mixing))]; }
-  .status-mastering { @apply bg-[hsl(var(--status-mastering)/0.15)] text-[hsl(var(--status-mastering))]; }
-  .status-release { @apply bg-[hsl(var(--status-release)/0.15)] text-[hsl(var(--status-release))]; }
+  .status-badge:hover {
+    transform: scale(1.05) translateZ(0);
+    box-shadow: 0 0 12px currentColor;
+  }
+
+  .status-idea {
+    @apply bg-[hsl(var(--status-idea)/0.15)] text-[hsl(var(--status-idea))];
+  }
+  .status-writing {
+    @apply bg-[hsl(var(--status-writing)/0.15)] text-[hsl(var(--status-writing))];
+  }
+  .status-recording {
+    @apply bg-[hsl(var(--status-recording)/0.15)] text-[hsl(var(--status-recording))];
+  }
+  .status-production {
+    @apply bg-[hsl(var(--status-production)/0.15)] text-[hsl(var(--status-production))];
+  }
+  .status-mixing {
+    @apply bg-[hsl(var(--status-mixing)/0.15)] text-[hsl(var(--status-mixing))];
+  }
+  .status-mastering {
+    @apply bg-[hsl(var(--status-mastering)/0.15)] text-[hsl(var(--status-mastering))];
+  }
+  .status-release {
+    @apply bg-[hsl(var(--status-release)/0.15)] text-[hsl(var(--status-release))];
+  }
 
   .hover-lift {
-    @apply transition-all duration-300 ease-out;
+    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
+      box-shadow 0.2s ease;
+    will-change: transform;
   }
 
   .hover-lift:hover {
-    @apply -translate-y-1 shadow-2xl;
+    transform: translateY(-2px) translateZ(0);
   }
 
   .song-card {
     @apply glass-panel p-5 hover-lift cursor-pointer;
+    animation: fade-in 0.3s ease-out backwards;
+    will-change: transform;
   }
 
   .song-card:hover {
-    box-shadow: 0 20px 40px -15px hsl(var(--primary) / 0.2);
+    transform: translateY(-3px) translateZ(0);
+    box-shadow: 0 20px 40px -15px hsl(var(--primary) / 0.3),
+      0 0 40px -15px hsl(var(--aura-lavender) / 0.2);
   }
 
   .section-header {
-    @apply flex items-center gap-2 py-3 px-4 rounded-xl bg-muted/50 mb-3;
+    @apply flex items-center gap-2 py-3 px-4 rounded-xl bg-muted/50 mb-3 relative;
+    transition: background-color 0.15s ease;
+  }
+
+  .section-header:hover {
+    @apply bg-muted/70;
   }
 
   .task-item {
-    @apply flex items-center gap-3 py-3 px-4 rounded-xl transition-all duration-200 hover:bg-muted/50;
+    @apply flex items-center gap-3 py-3 px-4 rounded-xl relative;
+    transition: background-color 0.15s ease;
+  }
+
+  .task-item:hover {
+    @apply bg-muted/50;
   }
 
   .nav-item {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground transition-all duration-200;
+    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground relative;
+    transition: background-color 0.15s ease, color 0.15s ease,
+      transform 0.15s ease;
+    will-change: transform;
   }
 
   .nav-item:hover {
     @apply bg-sidebar-accent text-sidebar-accent-foreground;
+    transform: translateX(2px) translateZ(0);
   }
 
   .nav-item.active {
-    @apply bg-primary/10 text-primary font-medium;
+    @apply bg-primary/15 text-primary font-medium;
+    box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
   }
 }
 
 @layer utilities {
   .text-gradient {
     @apply bg-gradient-to-r from-primary via-[hsl(var(--aura-rose))] to-[hsl(var(--aura-peach))] bg-clip-text text-transparent;
+    background-size: 200% 100%;
+    animation: aurora-flow 5s ease infinite;
+    filter: drop-shadow(0 0 8px hsl(var(--primary) / 0.3));
+  }
+
+  .text-gradient-breathe {
+    @apply text-gradient;
+    animation: aurora-flow 5s ease infinite,
+      aura-breathe 4s ease-in-out infinite;
   }
 
   .border-gradient {
     border: 1px solid transparent;
     background: linear-gradient(hsl(var(--card)), hsl(var(--card))) padding-box,
-                linear-gradient(135deg, hsl(var(--aura-lavender) / 0.5), hsl(var(--aura-peach) / 0.5), hsl(var(--aura-teal) / 0.5)) border-box;
+      linear-gradient(
+          135deg,
+          hsl(var(--aura-lavender) / 0.6),
+          hsl(var(--aura-peach) / 0.6),
+          hsl(var(--aura-teal) / 0.6)
+        )
+        border-box;
+    background-size: 200% 200%;
+    animation: aurora-flow 8s ease infinite;
+  }
+
+  .aurora-glow {
+    position: relative;
+  }
+
+  .aurora-glow::after {
+    content: "";
+    @apply absolute inset-0 rounded-2xl -z-10 opacity-30;
+    background: radial-gradient(
+      ellipse at center,
+      hsl(var(--primary) / 0.3),
+      transparent 70%
+    );
+    filter: blur(20px);
   }
 }
 
-@keyframes aura-float {
-  0%, 100% {
-    transform: translateX(0) translateY(0) scale(1);
-    opacity: 1;
-  }
-  25% {
-    transform: translateX(3%) translateY(-2%) scale(1.02);
-    opacity: 0.9;
+@keyframes aura-breathe {
+  0%,
+  100% {
+    opacity: 0.5;
   }
   50% {
-    transform: translateX(-2%) translateY(3%) scale(0.98);
-    opacity: 1;
+    opacity: 0.7;
   }
-  75% {
-    transform: translateX(-3%) translateY(-1%) scale(1.01);
-    opacity: 0.95;
+}
+
+@keyframes aurora-flow {
+  0% {
+    background-position: 0% 50%;
   }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -200% 0;
+  }
+  100% {
+    background-position: 200% 0;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 3s linear infinite;
 }
 
 @keyframes fade-in {
   from {
     opacity: 0;
-    transform: translateY(10px);
+    transform: translateY(10px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: translateY(0);
+    transform: translateY(0) translateZ(0);
   }
 }
 
 @keyframes scale-in {
   from {
     opacity: 0;
-    transform: scale(0.95);
+    transform: scale(0.98) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: scale(1);
+    transform: scale(1) translateZ(0);
   }
 }
 
 @keyframes slide-in-right {
   from {
     opacity: 0;
-    transform: translateX(20px);
+    transform: translateX(10px) translateZ(0);
   }
   to {
     opacity: 1;
-    transform: translateX(0);
+    transform: translateX(0) translateZ(0);
   }
 }
 
 .animate-fade-in {
-  animation: fade-in 0.4s ease-out forwards;
+  animation: fade-in 0.25s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .animate-scale-in {
-  animation: scale-in 0.3s ease-out forwards;
+  animation: scale-in 0.2s ease-out forwards;
+  will-change: opacity, transform;
 }
 
 .animate-slide-in-right {
-  animation: slide-in-right 0.3s ease-out forwards;
+  animation: slide-in-right 0.2s ease-out forwards;
+  will-change: opacity, transform;
+}
+
+.animate-breathe {
+  animation: aura-breathe 6s ease-in-out infinite;
+  will-change: opacity;
 }
 
 /* Custom scrollbar */

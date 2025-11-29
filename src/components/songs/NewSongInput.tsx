@@ -14,7 +14,7 @@ export const NewSongInput = ({ projectId, onCreated }: NewSongInputProps) => {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!title.trim()) return;
-    
+
     createSong(title.trim(), projectId);
     setTitle("");
     setIsExpanded(false);
@@ -25,21 +25,27 @@ export const NewSongInput = ({ projectId, onCreated }: NewSongInputProps) => {
     return (
       <button
         onClick={() => setIsExpanded(true)}
-        className="song-card flex items-center gap-3 text-muted-foreground hover:text-foreground w-full"
+        className="song-card flex items-center gap-3 text-muted-foreground hover:text-foreground w-full group"
       >
-        <div className="w-12 h-12 rounded-xl border-2 border-dashed border-muted-foreground/30 flex items-center justify-center">
-          <Plus className="w-5 h-5" />
+        <div className="w-12 h-12 rounded-xl border-2 border-dashed border-primary/30 group-hover:border-primary/60 flex items-center justify-center relative overflow-hidden transition-all duration-200">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-aura-lavender/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+          <Plus className="w-5 h-5 relative z-10 group-hover:scale-110 transition-transform duration-300" />
         </div>
-        <span className="font-medium">New Song</span>
+        <span className="font-medium group-hover:text-primary transition-colors duration-300">
+          New Song
+        </span>
       </button>
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="song-card animate-scale-in">
+    <form
+      onSubmit={handleSubmit}
+      className="song-card animate-scale-in aurora-glow"
+    >
       <div className="flex items-center gap-4">
-        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center flex-shrink-0">
-          <Plus className="w-5 h-5 text-primary" />
+        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/20 via-aura-lavender/15 to-aura-peach/20 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+          <Plus className="w-5 h-5 text-primary relative z-10" />
         </div>
         <input
           type="text"
@@ -67,9 +73,10 @@ export const NewSongInput = ({ projectId, onCreated }: NewSongInputProps) => {
         <button
           type="submit"
           disabled={!title.trim()}
-          className="px-4 py-2 text-sm bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50"
+          className="px-4 py-2 text-sm bg-gradient-to-r from-primary via-aura-lavender to-primary text-primary-foreground rounded-lg hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:hover:scale-100 relative overflow-hidden group"
         >
-          Create Song
+          <span className="relative z-10 font-medium">Create Song</span>
+          <div className="absolute inset-0 bg-gradient-to-r from-primary to-aura-teal opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
         </button>
       </div>
     </form>

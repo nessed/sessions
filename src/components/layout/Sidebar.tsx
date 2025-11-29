@@ -1,9 +1,9 @@
 import { NavLink, useLocation } from "react-router-dom";
-import { 
-  LayoutDashboard, 
-  Music, 
-  Disc, 
-  Lightbulb, 
+import {
+  LayoutDashboard,
+  Music,
+  Disc,
+  Lightbulb,
   Calendar,
   Pen,
   Mic,
@@ -15,7 +15,7 @@ import {
   Sun,
   Settings,
   Menu,
-  X
+  X,
 } from "lucide-react";
 import { useTheme } from "@/hooks/useSessionsDB";
 import { cn } from "@/lib/utils";
@@ -43,13 +43,19 @@ export const Sidebar = () => {
   const { settings, toggleTheme } = useTheme();
   const [isOpen, setIsOpen] = useState(false);
 
-  const NavItem = ({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) => (
+  const NavItem = ({
+    to,
+    icon: Icon,
+    label,
+  }: {
+    to: string;
+    icon: React.ElementType;
+    label: string;
+  }) => (
     <NavLink
       to={to}
       onClick={() => setIsOpen(false)}
-      className={({ isActive }) =>
-        cn("nav-item", isActive && "active")
-      }
+      className={({ isActive }) => cn("nav-item", isActive && "active")}
     >
       <Icon className="w-5 h-5" />
       <span>{label}</span>
@@ -77,13 +83,27 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:sticky top-0 left-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-40 transition-transform duration-300",
+          "fixed lg:sticky top-0 left-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-40 transition-transform duration-500 relative overflow-hidden",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        <div className="p-6">
-          <h1 className="text-2xl font-display font-bold text-gradient">Sessions</h1>
-          <p className="text-sm text-muted-foreground mt-1">Music Project Manager</p>
+        {/* Aurora accent */}
+        <div
+          className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-shimmer"
+          style={{ backgroundSize: "200% 100%" }}
+        />
+        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-aura-lavender/30 to-transparent" />
+        <div className="p-6 relative">
+          <div
+            className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-shimmer"
+            style={{ backgroundSize: "200% 100%" }}
+          />
+          <h1 className="text-2xl font-display font-bold text-gradient-breathe">
+            Sessions
+          </h1>
+          <p className="text-sm text-muted-foreground mt-1 animate-fade-in">
+            Music Project Manager
+          </p>
         </div>
 
         <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
@@ -106,10 +126,7 @@ export const Sidebar = () => {
         </nav>
 
         <div className="p-3 border-t border-sidebar-border space-y-1">
-          <button
-            onClick={toggleTheme}
-            className="nav-item w-full"
-          >
+          <button onClick={toggleTheme} className="nav-item w-full">
             {settings.theme === "dark" ? (
               <>
                 <Sun className="w-5 h-5" />
@@ -122,7 +139,11 @@ export const Sidebar = () => {
               </>
             )}
           </button>
-          <NavLink to="/settings" onClick={() => setIsOpen(false)} className={({ isActive }) => cn("nav-item", isActive && "active")}>
+          <NavLink
+            to="/settings"
+            onClick={() => setIsOpen(false)}
+            className={({ isActive }) => cn("nav-item", isActive && "active")}
+          >
             <Settings className="w-5 h-5" />
             <span>Settings</span>
           </NavLink>
