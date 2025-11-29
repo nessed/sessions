@@ -118,8 +118,16 @@ const AllSongs = () => {
                     to={`/song/${song.id}`}
                     className="flex items-center gap-4 p-4 hover:bg-muted/30 transition-colors animate-fade-in"
                   >
-                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-aura-peach/20 flex items-center justify-center flex-shrink-0">
-                      <Music className="w-5 h-5 text-primary" />
+                    <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary/20 to-aura-peach/20 flex items-center justify-center flex-shrink-0 overflow-hidden">
+                      {song.coverArt ? (
+                        <img
+                          src={song.coverArt}
+                          alt={`${song.title} cover`}
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <Music className="w-5 h-5 text-primary" />
+                      )}
                     </div>
                     <div className="flex-1 min-w-0">
                       <h3 className="font-semibold truncate">{song.title}</h3>

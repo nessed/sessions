@@ -34,6 +34,7 @@ export interface Song {
   bpm?: number;
   key?: string;
   moodTags: string[];
+  coverArt?: string;
   status: SongStatus;
   projectFileLink?: string;
   driveLink?: string;
@@ -49,6 +50,7 @@ export interface Project {
   title: string;
   description?: string;
   songIds: string[];
+  coverArt?: string;
   priority?: Priority;
   dueDate?: string;
   createdAt: string;

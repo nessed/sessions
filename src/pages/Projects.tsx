@@ -104,8 +104,16 @@ const Projects = () => {
                 className="glass-panel p-6 hover-lift block animate-fade-in group"
               >
                 <div className="flex items-start justify-between mb-4">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-aura-lavender/30 to-aura-teal/30 flex items-center justify-center">
-                    <Disc className="w-6 h-6 text-primary" />
+                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-aura-lavender/30 to-aura-teal/30 flex items-center justify-center overflow-hidden">
+                    {project.coverArt ? (
+                      <img
+                        src={project.coverArt}
+                        alt={`${project.title} cover`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <Disc className="w-6 h-6 text-primary" />
+                    )}
                   </div>
                   <button
                     onClick={(e) => handleDelete(project.id, e)}

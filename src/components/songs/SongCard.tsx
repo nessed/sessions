@@ -21,7 +21,15 @@ export const SongCard = ({ song, project }: SongCardProps) => {
     >
       <div className="flex items-start gap-4">
         <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 via-aura-lavender/20 to-aura-peach/30 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
-          <Music className="w-6 h-6 text-primary relative z-10" />
+          {song.coverArt ? (
+            <img
+              src={song.coverArt}
+              alt={`${song.title} cover`}
+              className="w-full h-full object-cover"
+            />
+          ) : (
+            <Music className="w-6 h-6 text-primary relative z-10" />
+          )}
         </div>
         <div className="flex-1 min-w-0">
           <h3 className="font-display font-semibold text-lg truncate">

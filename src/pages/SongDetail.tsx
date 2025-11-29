@@ -46,6 +46,8 @@ const SongDetail = () => {
   const [noteContent, setNoteContent] = useState("");
   const [isEditingTitle, setIsEditingTitle] = useState(false);
   const [title, setTitle] = useState("");
+  const [coverPreview, setCoverPreview] = useState<string | undefined>();
+  const [dominantColor, setDominantColor] = useState<string>("rgba(0,0,0,0.35)");
   const [newTag, setNewTag] = useState("");
   const [newVersionName, setNewVersionName] = useState("");
   const [isAddingVersion, setIsAddingVersion] = useState(false);
@@ -57,6 +59,7 @@ const SongDetail = () => {
       setSong(songData);
       if (songData) {
         setTitle(songData.title);
+        setCoverPreview(songData.coverArt);
         setTasks(getTasksBySong(id));
         const songNotes = getNotesBySong(id);
         setNotes(songNotes);
@@ -65,6 +68,36 @@ const SongDetail = () => {
       }
     }
   }, [id, db]);
+
+  // Extract a soft dominant color for background tint
+  useEffect(() => {
+    if (!coverPreview) return;
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.src = coverPreview;
+    img.onload = () => {
+      const canvas = document.createElement("canvas");
+      canvas.width = 32;
+      canvas.height = 32;
+      const ctx = canvas.getContext("2d");
+      if (!ctx) return;
+      ctx.drawImage(img, 0, 0, 32, 32);
+      const data = ctx.getImageData(0, 0, 32, 32).data;
+      let r = 0,
+        g = 0,
+        b = 0;
+      const len = data.length / 4;
+      for (let i = 0; i < data.length; i += 4) {
+        r += data[i];
+        g += data[i + 1];
+        b += data[i + 2];
+      }
+      r = Math.round(r / len);
+      g = Math.round(g / len);
+      b = Math.round(b / len);
+      setDominantColor(`rgba(${r}, ${g}, ${b}, 0.35)`);
+    };
+  }, [coverPreview]);
 
   const handleRefresh = () => {
     if (id) {
@@ -75,6 +108,7 @@ const SongDetail = () => {
         const songNotes = getNotesBySong(id);
         setNotes(songNotes);
         setVersions(getVersionsBySong(id));
+        setCoverPreview(getSong(id)?.coverArt);
       }, 0);
     }
     refresh();
@@ -153,6 +187,27 @@ const SongDetail = () => {
     }
   };
 
+  const handleCoverUpload = (file: File) => {
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const url = reader.result as string;
+      if (song) {
+        updateSong(song.id, { coverArt: url });
+        setCoverPreview(url);
+        handleRefresh();
+      }
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCoverRemove = () => {
+    if (song) {
+      updateSong(song.id, { coverArt: undefined });
+      setCoverPreview(undefined);
+      handleRefresh();
+    }
+  };
+
   if (!song) {
     return (
       <Layout>
@@ -167,7 +222,46 @@ const SongDetail = () => {
 
   return (
     <Layout>
-      <div className="max-w-6xl mx-auto">
+      <div className="relative min-h-screen">
+        {coverPreview && (
+          <>
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                background: `radial-gradient(circle at 20% 20%, ${dominantColor}, transparent 45%), radial-gradient(circle at 80% 30%, ${dominantColor}, transparent 40%), radial-gradient(circle at 50% 80%, ${dominantColor}, transparent 40%)`,
+                filter: "blur(32px)",
+                opacity: 1,
+              }}
+            />
+            <div
+              className="absolute inset-0 pointer-events-none"
+              style={{
+                backgroundImage: `url(${coverPreview})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+                filter: "blur(40px)",
+                opacity: 0.45,
+              }}
+            />
+            <div
+              className="absolute -left-24 -top-24 w-72 h-72 rounded-full opacity-30 blur-3xl pointer-events-none"
+              style={{
+                backgroundImage: `url(${coverPreview})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+            <div
+              className="absolute -right-24 bottom-10 w-80 h-80 rounded-full opacity-25 blur-3xl pointer-events-none"
+              style={{
+                backgroundImage: `url(${coverPreview})`,
+                backgroundSize: "cover",
+                backgroundPosition: "center",
+              }}
+            />
+          </>
+        )}
+        <div className="max-w-6xl mx-auto relative z-10">
         <button
           onClick={() => navigate(-1)}
           className="flex items-center gap-2 text-muted-foreground hover:text-foreground mb-6 transition-colors"
@@ -179,6 +273,28 @@ const SongDetail = () => {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           {/* Main Content */}
           <div className="lg:col-span-2 space-y-6">
+            {coverPreview && (
+              <div className="glass-panel p-4 flex items-center gap-3">
+                <div className="w-12 h-12 rounded-xl overflow-hidden bg-muted/60 border border-border flex-shrink-0">
+                  <img
+                    src={coverPreview}
+                    alt={`${song.title} cover`}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+                <div className="flex-1">
+                  <p className="text-xs uppercase tracking-wider text-muted-foreground">
+                    Now viewing
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <span className="font-display font-semibold text-lg">
+                      {song.title}
+                    </span>
+                    <StatusBadge status={song.status} />
+                  </div>
+                </div>
+              </div>
+            )}
             {/* Song Info */}
             <div className="glass-panel p-6">
               <div className="flex items-start justify-between gap-4 mb-6">
@@ -216,8 +332,122 @@ const SongDetail = () => {
                 </button>
               </div>
 
-              <div className="mb-6">
-                <ProgressBar progress={progress} />
+              <div className="grid grid-cols-1 md:grid-cols-[1fr,2fr] gap-6 mb-6">
+                <div className="relative group">
+                  <div className="aspect-square w-full max-w-xs rounded-2xl overflow-hidden border border-border bg-gradient-to-br from-muted/80 via-muted to-muted/50 shadow-lg">
+                    {coverPreview ? (
+                      <img
+                        src={coverPreview}
+                        alt={`${song.title} cover`}
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center text-muted-foreground text-sm">
+                        No cover art yet
+                      </div>
+                    )}
+                    <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-3">
+                      <label className="px-3 py-2 rounded-lg bg-white/90 text-sm font-medium text-primary cursor-pointer shadow">
+                        <input
+                          type="file"
+                          accept="image/*"
+                          className="hidden"
+                          onChange={(e) => {
+                            const file = e.target.files?.[0];
+                            if (file) handleCoverUpload(file);
+                          }}
+                        />
+                        Upload cover
+                      </label>
+                      {coverPreview && (
+                        <button
+                          onClick={handleCoverRemove}
+                          className="px-3 py-2 rounded-lg bg-destructive/90 text-sm font-medium text-destructive-foreground shadow hover:bg-destructive"
+                        >
+                          Remove
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                  <p className="mt-2 text-xs text-muted-foreground">
+                    Tip: Use square images for best fit. Hover to change.
+                  </p>
+                </div>
+                <div className="space-y-4">
+                  <div className="flex items-center gap-3">
+                    <div className="flex-1">
+                      <ProgressBar progress={progress} />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                    <div>
+                      <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Status
+                      </label>
+                      <select
+                        value={song.status}
+                        onChange={(e) =>
+                          handleUpdateStatus(e.target.value as SongStatus)
+                        }
+                        className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        {SECTIONS.map((s) => (
+                          <option key={s} value={s}>
+                            {SECTION_LABELS[s]}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                        BPM
+                      </label>
+                      <input
+                        type="number"
+                        value={song.bpm || ""}
+                        onChange={(e) =>
+                          handleUpdateField(
+                            "bpm",
+                            e.target.value ? parseInt(e.target.value) : undefined
+                          )
+                        }
+                        placeholder="120"
+                        className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Key
+                      </label>
+                      <input
+                        type="text"
+                        value={song.key || ""}
+                        onChange={(e) => handleUpdateField("key", e.target.value)}
+                        placeholder="C minor"
+                        className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs text-muted-foreground uppercase tracking-wider">
+                        Project
+                      </label>
+                      <select
+                        value={song.projectId || ""}
+                        onChange={(e) =>
+                          handleUpdateField("projectId", e.target.value)
+                        }
+                        className="mt-1 w-full bg-muted/50 border-none rounded-lg px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-primary"
+                      >
+                        <option value="">None</option>
+                        {db.projects.map((p) => (
+                          <option key={p.id} value={p.id}>
+                            {p.title}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                  </div>
+                </div>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
@@ -523,6 +753,7 @@ const SongDetail = () => {
               </div>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </Layout>

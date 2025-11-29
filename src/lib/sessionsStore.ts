@@ -61,6 +61,7 @@ export const createSong = (title: string, projectId?: string): Song => {
     title,
     projectId,
     moodTags: [],
+    coverArt: undefined,
     status: "idea",
     createdAt: getTimestamp(),
     updatedAt: getTimestamp(),
@@ -288,6 +289,7 @@ export const createProject = (title: string, description?: string): Project => {
     title,
     description,
     songIds: [],
+    coverArt: undefined,
     createdAt: getTimestamp(),
     updatedAt: getTimestamp(),
   };
