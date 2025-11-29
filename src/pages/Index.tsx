@@ -19,12 +19,12 @@ const Index = () => {
   return (
     <Layout>
       <div className="max-w-6xl mx-auto">
-        <header className="mb-8 pt-8 lg:pt-0">
-          <h1 className="text-4xl font-display font-bold text-gradient-breathe mb-2 animate-fade-in">
+        <header className="mb-4 pt-8 lg:pt-0">
+          <h1 className="text-3xl font-display font-bold tracking-tight text-white mb-1">
             Dashboard
           </h1>
-          <p className="text-muted-foreground">
-            Manage your music projects and track progress
+          <p className="text-sm text-zinc-300">
+            Dense view of your sessions
           </p>
         </header>
 
@@ -43,17 +43,23 @@ const Index = () => {
             <NewSongInput onCreated={refresh} />
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
-            <NewSongInput onCreated={refresh} />
-            {sortedSongs.map((song, index) => (
-              <div
-                key={song.id}
-                className="animate-fade-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
-                <SongCard song={song} project={getProject(song.projectId)} />
+          <div className="flex flex-col gap-1">
+            <div className="flex items-center justify-between mb-2">
+              <div className="text-xs text-zinc-500 font-mono uppercase tracking-[0.2em]">
+                Songs
               </div>
-            ))}
+              <NewSongInput onCreated={refresh} />
+            </div>
+            <div className="flex flex-col">
+              {sortedSongs.map((song, index) => (
+                <SongCard
+                  key={song.id}
+                  song={song}
+                  project={getProject(song.projectId)}
+                  style={{ animationDelay: `${index * 0.02}s` } as any}
+                />
+              ))}
+            </div>
           </div>
         )}
       </div>

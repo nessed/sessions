@@ -140,15 +140,15 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
   return (
     <form
       onSubmit={handleSubmit}
-      className="mb-4 rounded-xl border border-border bg-muted/40 px-3 py-2"
+      className="mb-4 px-1 py-1"
     >
       <div className="flex items-start gap-2">
-        <div className="flex-shrink-0 w-9 h-9 rounded-lg bg-primary/10 text-primary flex items-center justify-center">
+        <div className="flex-shrink-0 w-9 h-9 rounded-lg text-primary flex items-center justify-center">
           <Sparkles className="w-4 h-4" />
         </div>
         <div className="flex-1 relative">
           <div
-            className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words text-sm leading-6 text-foreground"
+            className="pointer-events-none absolute inset-0 whitespace-pre-wrap break-words text-sm leading-6 text-white"
             aria-hidden
             dangerouslySetInnerHTML={{ __html: highlightedValue }}
           />
@@ -167,7 +167,7 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
             <PopoverTrigger asChild>
               <button
                 type="button"
-                className="p-2 rounded-lg text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
+                className="p-2 rounded-lg text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="How to use smart input"
               >
                 <Info className="w-4 h-4" />
@@ -201,7 +201,7 @@ export const SmartTaskInput = ({ songId, onCreated }: SmartTaskInputProps) => {
               "px-3 py-2 rounded-lg text-sm font-medium flex items-center gap-2 transition-colors",
               parsed.title.trim()
                 ? "bg-primary text-primary-foreground"
-                : "bg-muted text-muted-foreground cursor-not-allowed"
+                : "text-muted-foreground cursor-not-allowed"
             )}
             disabled={!parsed.title.trim() || isSubmitting}
           >

@@ -55,9 +55,15 @@ export const Sidebar = () => {
     <NavLink
       to={to}
       onClick={() => setIsOpen(false)}
-      className={({ isActive }) => cn("nav-item", isActive && "active")}
+      className={({ isActive }) =>
+        cn(
+          "nav-item text-xs font-medium py-1 px-3 gap-2",
+          "hover:bg-white/5 rounded-md",
+          isActive && "active"
+        )
+      }
     >
-      <Icon className="w-5 h-5" />
+      <Icon className="w-3 h-3" />
       <span>{label}</span>
     </NavLink>
   );
@@ -83,40 +89,28 @@ export const Sidebar = () => {
       {/* Sidebar */}
       <aside
         className={cn(
-          "fixed lg:sticky top-0 left-0 h-screen w-64 bg-sidebar border-r border-sidebar-border flex flex-col z-40 transition-transform duration-500 relative overflow-hidden",
+          "fixed lg:sticky top-0 left-0 h-screen w-64 bg-transparent flex flex-col z-40 transition-transform duration-500 relative overflow-hidden border-none",
           isOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
         )}
       >
-        {/* Aurora accent */}
-        <div
-          className="absolute top-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent animate-shimmer"
-          style={{ backgroundSize: "200% 100%" }}
-        />
-        <div className="absolute bottom-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-aura-lavender/30 to-transparent" />
-        <div className="p-6 relative">
-          <div
-            className="absolute top-0 left-0 right-0 h-px bg-gradient-to-r from-transparent via-primary/30 to-transparent animate-shimmer"
-            style={{ backgroundSize: "200% 100%" }}
-          />
-          <h1 className="text-2xl font-display font-bold text-gradient-breathe">
+        <div className="p-4 relative">
+          <h1 className="text-lg font-display font-bold tracking-tight text-white">
             Sessions
           </h1>
-          <p className="text-sm text-muted-foreground mt-1 animate-fade-in">
+          <p className="text-xs text-muted-foreground mt-1 animate-fade-in">
             Music Project Manager
           </p>
         </div>
 
-        <nav className="flex-1 px-3 space-y-1 overflow-y-auto">
-          <div className="space-y-1">
+        <nav className="flex-1 px-2 space-y-2 overflow-y-auto">
+          <div className="space-y-1 mt-1">
             {mainNavItems.map((item) => (
               <NavItem key={item.to} {...item} />
             ))}
           </div>
 
-          <div className="pt-6 pb-2">
-            <p className="px-4 text-xs font-medium text-muted-foreground uppercase tracking-wider">
-              Filters
-            </p>
+          <div className="pt-4 pb-1 px-1 text-[10px] font-semibold text-muted-foreground uppercase tracking-[0.2em]">
+            Filters
           </div>
           <div className="space-y-1">
             {filterItems.map((item) => (
@@ -125,16 +119,16 @@ export const Sidebar = () => {
           </div>
         </nav>
 
-        <div className="p-3 border-t border-sidebar-border space-y-1">
-          <button onClick={toggleTheme} className="nav-item w-full">
+        <div className="p-3 space-y-1">
+          <button onClick={toggleTheme} className="nav-item w-full text-xs font-medium py-1 px-3 gap-2 hover:bg-white/5 rounded-md">
             {settings.theme === "dark" ? (
               <>
-                <Sun className="w-5 h-5" />
+                <Sun className="w-3 h-3" />
                 <span>Light Mode</span>
               </>
             ) : (
               <>
-                <Moon className="w-5 h-5" />
+                <Moon className="w-3 h-3" />
                 <span>Dark Mode</span>
               </>
             )}
@@ -142,9 +136,14 @@ export const Sidebar = () => {
           <NavLink
             to="/settings"
             onClick={() => setIsOpen(false)}
-            className={({ isActive }) => cn("nav-item", isActive && "active")}
+            className={({ isActive }) =>
+              cn(
+                "nav-item text-xs font-medium py-1 px-3 gap-2 hover:bg-white/5 rounded-md",
+                isActive && "active"
+              )
+            }
           >
-            <Settings className="w-5 h-5" />
+            <Settings className="w-3 h-3" />
             <span>Settings</span>
           </NavLink>
         </div>

@@ -127,10 +127,6 @@
 }
 
 @layer base {
-  * {
-    @apply border-border;
-  }
-
   html {
     font-family: "Plus Jakarta Sans", sans-serif;
   }
@@ -138,6 +134,7 @@
   body {
     @apply bg-background text-foreground antialiased;
     transition: background-color 0.5s ease, color 0.5s ease;
+    color: #e5e7eb;
   }
 
   body::before {
@@ -157,25 +154,17 @@
   h5,
   h6 {
     font-family: "Space Grotesk", sans-serif;
+    letter-spacing: -0.01em;
   }
 }
 
 @layer components {
-  .glass-panel {
-    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-lg border border-[hsl(var(--glass-border))] rounded-2xl shadow-xl;
-    position: relative;
-    transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1),
-      box-shadow 0.2s ease;
-    will-change: transform;
-  }
-
-  .glass-panel:hover {
-    transform: translateY(-2px) translateZ(0);
-    box-shadow: 0 15px 40px -12px hsl(var(--primary) / 0.25);
+.glass-panel {
+    @apply bg-transparent backdrop-blur-none rounded-none shadow-none border border-white/5;
   }
 
   .glass-panel-subtle {
-    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-sm border border-[hsl(var(--glass-border))] rounded-xl;
+    @apply bg-[hsl(var(--glass-bg))] backdrop-blur-sm rounded-xl border-none;
     transition: box-shadow 0.2s ease;
   }
 
@@ -308,20 +297,18 @@
   }
 
   .nav-item {
-    @apply flex items-center gap-3 px-4 py-2.5 rounded-xl text-muted-foreground relative;
-    transition: background-color 0.15s ease, color 0.15s ease,
-      transform 0.15s ease;
+    @apply flex items-center gap-3 px-2 py-1 text-white/70 relative rounded-none;
+    transition: color 0.15s ease, transform 0.15s ease;
     will-change: transform;
   }
 
   .nav-item:hover {
-    @apply bg-sidebar-accent text-sidebar-accent-foreground;
+    @apply text-white;
     transform: translateX(2px) translateZ(0);
   }
 
   .nav-item.active {
-    @apply bg-primary/15 text-primary font-medium;
-    box-shadow: 0 0 12px hsl(var(--primary) / 0.15);
+    @apply text-white font-semibold;
   }
 }
 

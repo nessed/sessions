@@ -56,20 +56,22 @@ export const TaskItem = ({ task, onUpdate }: TaskItemProps) => {
     <div
       className={cn(
         "flex items-start gap-3 py-1",
-        task.done && "opacity-60"
+        task.done && "opacity-30"
       )}
     >
       <button
         onClick={handleToggle}
         className={cn(
-          "mt-1 w-4 h-4 rounded-full border flex items-center justify-center transition-colors",
-          task.done
-            ? "bg-primary border-primary"
-            : "border-muted-foreground/30 hover:border-primary"
+          "mt-1 w-5 h-5 rounded-full flex items-center justify-center transition-colors",
+          task.done ? "bg-primary text-primary-foreground" : "text-muted-foreground hover:text-primary"
         )}
         aria-label={task.done ? "Mark incomplete" : "Mark complete"}
       >
-        {task.done && <Check className="w-3 h-3 text-primary-foreground" />}
+        {task.done ? (
+          <Check className="w-3 h-3" />
+        ) : (
+          <Check className="w-3 h-3 opacity-0 group-hover:opacity-100 transition-opacity" />
+        )}
       </button>
 
       {isEditing ? (

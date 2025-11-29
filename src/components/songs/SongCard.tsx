@@ -1,26 +1,25 @@
 import { Link } from "react-router-dom";
 import { Song, Project } from "@/lib/types";
-import { getSongProgress } from "@/lib/sessionsStore";
 import { StatusBadge } from "./StatusBadge";
-import { ProgressBar } from "./ProgressBar";
-import { formatDistanceToNow } from "date-fns";
-import { Music } from "lucide-react";
 
 interface SongCardProps {
   song: Song;
   project?: Project;
+  style?: React.CSSProperties;
 }
 
-export const SongCard = ({ song, project }: SongCardProps) => {
-  const progress = getSongProgress(song.id);
+export const SongCard = ({ song, project, style }: SongCardProps) => {
+  const bpmText = song.bpm ? `${song.bpm} bpm` : "—";
+  const keyText = song.key ? ` / ${song.key}` : "";
 
   return (
     <Link
       to={`/song/${song.id}`}
-      className="song-card block animate-fade-in aurora-glow"
+      style={style}
+      className="flex items-center justify-between py-3 px-2 text-white hover:text-white transition-all duration-150 hover:translate-x-2 border-b border-white/5 bg-transparent hover:bg-white/5"
     >
-      <div className="flex items-start gap-4">
-        <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-primary/30 via-aura-lavender/20 to-aura-peach/30 flex items-center justify-center flex-shrink-0 relative overflow-hidden">
+      <div className="flex items-center gap-3 min-w-0">
+        <div className="w-8 h-8 rounded-sm overflow-hidden bg-transparent flex-shrink-0">
           {song.coverArt ? (
             <img
               src={song.coverArt}
@@ -28,54 +27,27 @@ export const SongCard = ({ song, project }: SongCardProps) => {
               className="w-full h-full object-cover"
             />
           ) : (
-            <Music className="w-6 h-6 text-primary relative z-10" />
+            <div className="w-full h-full bg-gradient-to-br from-white/10 via-white/5 to-white/0" />
           )}
         </div>
-        <div className="flex-1 min-w-0">
-          <h3 className="font-display font-semibold text-lg truncate">
+        <div className="flex flex-col min-w-0">
+          <span className="text-lg font-light tracking-tight leading-tight truncate">
             {song.title}
-          </h3>
+          </span>
           {project && (
-            <p className="text-sm text-muted-foreground truncate">
+            <span className="text-[11px] text-white/50 uppercase tracking-[0.08em]">
               {project.title}
-            </p>
+            </span>
           )}
         </div>
-        <StatusBadge status={song.status} />
       </div>
-
-      <div className="mt-4">
-        <ProgressBar progress={progress} />
-      </div>
-
-      <div className="mt-3 flex items-center justify-between text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          {song.bpm && <span>{song.bpm} BPM</span>}
-          {song.key && <span>• Key: {song.key}</span>}
-        </div>
+      <div className="flex items-center gap-4 text-white/50 text-xs font-mono">
         <span>
-          {formatDistanceToNow(new Date(song.updatedAt), { addSuffix: true })}
+          {bpmText}
+          {keyText}
         </span>
+        <StatusBadge status={song.status} variant="minimal" className="text-white/50" />
       </div>
-
-      {song.moodTags.length > 0 && (
-        <div className="mt-3 flex flex-wrap gap-1.5">
-          {song.moodTags.slice(0, 3).map((tag, index) => (
-            <span
-              key={tag}
-              className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-primary/10 via-aura-lavender/10 to-aura-teal/10 text-muted-foreground border border-primary/20 hover:border-primary/40 transition-all duration-300 hover:scale-105"
-              style={{ animationDelay: `${index * 0.1}s` }}
-            >
-              {tag}
-            </span>
-          ))}
-          {song.moodTags.length > 3 && (
-            <span className="px-2 py-0.5 text-xs rounded-full bg-gradient-to-r from-primary/10 via-aura-lavender/10 to-aura-teal/10 text-muted-foreground border border-primary/20">
-              +{song.moodTags.length - 3}
-            </span>
-          )}
-        </div>
-      )}
     </Link>
   );
 };
