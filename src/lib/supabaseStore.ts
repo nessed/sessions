@@ -1,5 +1,5 @@
 import { supabase } from "@/lib/supabaseClient";
-import { Song, Task } from "@/lib/types";
+import { Project, Song, Task } from "@/lib/types";
 
 // Utility mappers between Supabase rows and app types
 const mapSong = (row: any): Song => ({
@@ -16,6 +16,17 @@ const mapSong = (row: any): Song => ({
   createdAt: row.created_at,
   updatedAt: row.updated_at,
   order: row.order_position || 0,
+});
+
+const mapProject = (row: any): Project => ({
+  id: row.id,
+  title: row.title,
+  description: row.description || undefined,
+  songIds: [], // we don't hydrate songs here
+  priority: undefined,
+  dueDate: undefined,
+  createdAt: row.created_at,
+  updatedAt: row.updated_at,
 });
 
 const mapTask = (row: any): Task => ({
@@ -70,6 +81,7 @@ export const createSong = async (
     bpm?: number | null;
     song_key?: string | null;
     mood_tags?: string[] | null;
+    project_id?: string | null;
   }
 ): Promise<Song | null> => {
   const insertPayload = {
@@ -79,6 +91,7 @@ export const createSong = async (
     bpm: partial.bpm ?? null,
     song_key: partial.song_key ?? null,
     mood_tags: partial.mood_tags ?? [],
+    project_id: partial.project_id ?? null,
   };
 
   const { data, error } = await supabase
@@ -213,5 +226,92 @@ export const deleteTask = async (
     .eq("user_id", userId);
   if (error) {
     console.error("deleteTask error", error);
+  }
+};
+
+// Projects
+export const getProjects = async (userId: string): Promise<Project[]> => {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: true });
+  if (error) {
+    console.error("getProjects error", error);
+    return [];
+  }
+  return (data || []).map(mapProject);
+};
+
+export const getProjectById = async (
+  userId: string,
+  projectId: string
+): Promise<Project | null> => {
+  const { data, error } = await supabase
+    .from("projects")
+    .select("*")
+    .eq("user_id", userId)
+    .eq("id", projectId)
+    .single();
+  if (error) {
+    console.error("getProjectById error", error);
+    return null;
+  }
+  return mapProject(data);
+};
+
+export const createProject = async (
+  userId: string,
+  partial: { title: string; description?: string | null }
+): Promise<Project | null> => {
+  const { data, error } = await supabase
+    .from("projects")
+    .insert({
+      user_id: userId,
+      title: partial.title,
+      description: partial.description ?? null,
+    })
+    .select("*")
+    .single();
+  if (error) {
+    console.error("createProject error", error);
+    return null;
+  }
+  return mapProject(data);
+};
+
+export const updateProject = async (
+  userId: string,
+  projectId: string,
+  patch: Partial<Project>
+): Promise<Project | null> => {
+  const { data, error } = await supabase
+    .from("projects")
+    .update({
+      title: patch.title,
+      description: patch.description ?? null,
+    })
+    .eq("id", projectId)
+    .eq("user_id", userId)
+    .select("*")
+    .single();
+  if (error) {
+    console.error("updateProject error", error);
+    return null;
+  }
+  return mapProject(data);
+};
+
+export const deleteProject = async (
+  userId: string,
+  projectId: string
+): Promise<void> => {
+  const { error } = await supabase
+    .from("projects")
+    .delete()
+    .eq("id", projectId)
+    .eq("user_id", userId);
+  if (error) {
+    console.error("deleteProject error", error);
   }
 };

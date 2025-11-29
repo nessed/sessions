@@ -1,37 +1,61 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { Layout } from "@/components/layout/Layout";
-import { useSessionsDB } from "@/hooks/useSessionsDB";
-import { createProject, deleteProject, getSongProgress } from "@/lib/sessionsStore";
 import { Disc, Plus, Trash2 } from "lucide-react";
+import { useAuth } from "@/auth/AuthProvider";
+import { Project, Song } from "@/lib/types";
+import {
+  createProject,
+  deleteProject,
+  getProjects,
+  getSongs,
+} from "@/lib/supabaseStore";
 
 const Projects = () => {
-  const { db, refresh } = useSessionsDB();
+  const { user } = useAuth();
+  const [projects, setProjects] = useState<Project[]>([]);
+  const [songs, setSongs] = useState<Song[]>([]);
   const [isAdding, setIsAdding] = useState(false);
   const [newTitle, setNewTitle] = useState("");
 
-  const handleCreate = () => {
-    if (newTitle.trim()) {
-      createProject(newTitle.trim());
+  useEffect(() => {
+    const load = async () => {
+      if (!user) return;
+      const [projData, songData] = await Promise.all([
+        getProjects(user.id),
+        getSongs(user.id),
+      ]);
+      setProjects(projData);
+      setSongs(songData);
+    };
+    load();
+  }, [user]);
+
+  const handleCreate = async () => {
+    if (!user) return;
+    if (!newTitle.trim()) return;
+    const created = await createProject(user.id, { title: newTitle.trim() });
+    if (created) {
+      setProjects((prev) => [...prev, created]);
       setNewTitle("");
       setIsAdding(false);
-      refresh();
     }
   };
 
-  const handleDelete = (id: string, e: React.MouseEvent) => {
+  const handleDelete = async (id: string, e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
+    if (!user) return;
     if (confirm("Are you sure you want to delete this project?")) {
-      deleteProject(id);
-      refresh();
+      await deleteProject(user.id, id);
+      setProjects((prev) => prev.filter((p) => p.id !== id));
     }
   };
 
   const getProjectProgress = (songIds: string[]) => {
     if (songIds.length === 0) return 0;
-    const total = songIds.reduce((acc, id) => acc + getSongProgress(id), 0);
-    return Math.round(total / songIds.length);
+    // Without per-song task progress, approximate as 0 for now
+    return 0;
   };
 
   return (
@@ -93,9 +117,9 @@ const Projects = () => {
           )}
 
           {/* Project Cards */}
-          {db.projects.map((project) => {
-            const songs = db.songs.filter((s) => project.songIds.includes(s.id));
-            const progress = getProjectProgress(project.songIds);
+          {projects.map((project) => {
+            const projSongs = songs.filter((s) => s.projectId === project.id);
+            const progress = getProjectProgress(projSongs.map((s) => s.id));
 
             return (
               <Link
@@ -125,11 +149,13 @@ const Projects = () => {
 
                 <h3 className="font-display font-semibold text-lg mb-1">{project.title}</h3>
                 {project.description && (
-                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">{project.description}</p>
+                  <p className="text-sm text-muted-foreground mb-3 line-clamp-2">
+                    {project.description}
+                  </p>
                 )}
 
                 <div className="flex items-center justify-between text-sm text-muted-foreground">
-                  <span>{songs.length} songs</span>
+                  <span>{projSongs.length} songs</span>
                   <span>{progress}% complete</span>
                 </div>
 
@@ -144,7 +170,7 @@ const Projects = () => {
           })}
         </div>
 
-        {db.projects.length === 0 && !isAdding && (
+        {projects.length === 0 && !isAdding && (
           <div className="glass-panel p-12 text-center mt-8">
             <Disc className="w-16 h-16 text-muted-foreground mx-auto mb-4" />
             <h2 className="text-xl font-display font-semibold mb-2">No projects yet</h2>
